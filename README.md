@@ -5,8 +5,11 @@ Scion is easy to use for both beginners and professionals. This framework use th
 
 ## Features
 
-## Requirements
+## System Requirements
+You need PHP >= 5.5.0 beacause this framework use:
+* Namespaces
+* Traits
+* Shortcut array: []
 
 ## Getting Started
-* [HelloWorld](https://github.com/emulienfou/Scion-Framework.wiki.git)
-
+* [HelloWorld](https://github.com/emulienfou/Scion-Framework/wiki/HelloWorld)
