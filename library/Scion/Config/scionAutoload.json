@@ -1,0 +1,8 @@
+{
+    "autoload": {
+        "psr-0": {
+            "Dwoo": "library/Dwoo",
+            "Scion": "library/Scion"
+        }
+    }
+}

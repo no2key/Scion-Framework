@@ -1,0 +1,93 @@
+{
+    "routes": {
+        "url": {
+            "pattern": "/scheme.html",
+            "options": {
+                "scheme": "https"
+            }
+        },
+        "hello": {
+            "pattern": "/hello/:name",
+            "options": {
+                "controller": "HelloWorld:ControllerHelloWorld:index",
+                "method": "POST"
+            }
+        },
+        "json": {
+            "pattern": "/datas",
+            "options": {
+                "controller": "HelloWorld:ControllerHelloWorld:json",
+                "format": "json"
+            }
+        },
+        "photo": {
+            "pattern": "/photo/:action/:id-:name/:delete",
+            "options": {
+                "defaults": {
+                    "action": "index",
+                    "id": 0,
+                    "delete": 0,
+                    "name": "noname"
+                },
+                "constraints": {
+                    "action":  {
+                        "REG_MATCH": "\\w+"
+                    },
+                    "id": "INT",
+                    "name": {
+                        "REG_REPLACE": "A-Za-z\\-_0-9"
+                    },
+                    "delete": {
+                        "REG_MATCH": "[01]"
+                    }
+                },
+                "controller": "HelloWorld:ControllerHelloWorld:photo",
+                "method": "POST"
+            }
+        },
+        "test": {
+            "pattern": "/test/:action/static/:ref_id/:tag/*",
+            "options": {
+                "defaults": {
+                    "action": "index",
+                    "ref_id": 0,
+                    "tag": "no_tag"
+                },
+                "constraints": {
+                    "action": {
+                        "REG_MATCH": "\\w+"
+                    },
+                    "ref_id": "INT",
+                    "tag": null
+                }
+            }
+        },
+        "home": {
+            "pattern": "/",
+            "options": {
+                "defaults": {
+                    "action": "index"
+                },
+                "regex": "#^/(?:page=(?P<page>[0-9]+))?$#"
+            }
+        },
+        "format": {
+            "pattern": "/:year/:month/:day/:title.:format",
+            "options": {
+                "default": {
+                    "year": 2012,
+                    "month": 9,
+                    "day": 24
+                },
+                "constraints": {
+                    "title": {
+                        "REG_MATCH": "\\w+"
+                    },
+                    "format": {
+                        "REG_MATCH": "\\.(html|htm|php|json)$"
+                    }
+                }
+            }
+        }
+    }
+}

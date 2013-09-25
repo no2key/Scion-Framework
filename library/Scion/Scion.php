@@ -21,16 +21,39 @@ class Scion {
 	const VERSION = 1.0;
 
 	/**
-	 * Register Scion's PSR-0 autoloader
+	 * @const string Minimum PHP Version supported by Scion
 	 */
-	public static function registerAutoloader() {
-		require __DIR__ . '/Models/Loader/Autoloader.php';
-		$autoloader = new Autoloader();
-		$autoloader->_namespaces = [
-			'Dwoo'	=> dirname(__DIR__) . DIRECTORY_SEPARATOR . 'Dwoo',
-			'Scion'	=> dirname(__DIR__) . DIRECTORY_SEPARATOR . 'Scion'
-		];
-		$autoloader->register();
+	const MINIMUM_PHP_VERSION = '5.5';
+
+	/**
+	 * Constructor
+	 */
+	public function __construct() {
+		// Check PHP version greater than 5.5
+		if ($this->_checkPhpVersion() === false) {
+			die('You need PHP 5.5 minimum.<br>Current version: ' . PHP_VERSION);
+		}
 	}
 
+	/**
+	 * Register Scion's PSR-0 autoloader
+	 * @param string|array $registerAutoload
+	 */
+	public static function registerAutoloader($registerAutoload = '') {
+		require __DIR__ . '/Models/Loader/Autoloader.php';
+
+		$autoload = new Autoloader('library/Scion/Config/scionAutoload.json');
+		if (!empty($registerAutoload)) {
+			$autoload->registerFromJson($registerAutoload);
+		}
+		$autoload->register();
+	}
+
+	/**
+	 * Test version of PHP is greater than 5.5
+	 * @return bool
+	 */
+	private function _checkPhpVersion() {
+		return version_compare(PHP_VERSION, self::MINIMUM_PHP_VERSION) >= 0;
+	}
 }

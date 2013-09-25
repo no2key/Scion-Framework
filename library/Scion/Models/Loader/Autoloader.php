@@ -1,6 +1,9 @@
 <?php
 namespace Scion\Models\Loader;
 
+use Scion\Models\File\Json;
+
+require dirname(__DIR__) . '/File/Json.php';
 class Autoloader {
 
 	private $_fileExtension = '.php';
@@ -8,29 +11,24 @@ class Autoloader {
 	private $_namespaceSeparator = '\\';
 
 	/**
-	 * Constructor
+	 * Constructor, populate namespaces array with default values
+	 * @param $defaultNamespaces
 	 */
-	public function __construct() {
-
+	public function __construct($defaultNamespaces) {
+		$this->_namespaces = Json::processConfigAutoload($defaultNamespaces);
 	}
 
 	/**
-	 * Magic method getter
-	 * @param $name
-	 * @return mixed
+	 * Register new namespaces from a Json file
+	 * @param string|array $value
 	 */
-	public function __get($name) {
-		return $this->$name;
-	}
-
-	/**
-	 * Magic method setter
-	 *
-	 * @param $name
-	 * @param $value
-	 */
-	public function __set($name, $value) {
-		$this->$name = $value;
+	public function registerFromJson($value) {
+		if (is_array($value)) {
+			$this->_namespaces = array_merge($this->_namespaces, $value);
+		}
+		else if (is_string($value)) {
+			$this->_namespaces = array_merge($this->_namespaces, Json::processConfigAutoload($value));
+		}
 	}
 
 	/**
@@ -54,7 +52,7 @@ class Autoloader {
 		foreach ($this->_namespaces as $namespace => $includePath) {
 			if (0 === strpos($className, $namespace)) {
 				$trimmedClass = substr($className, strlen($namespace));
-				$filename     = $this->_transformClassNameToFilename($trimmedClass, $includePath);
+				$filename     = self::_transformClassNameToFilename($trimmedClass, $includePath);
 				if (file_exists($filename) && !class_exists($className)) {
 					require $filename;
 				}
