@@ -10,7 +10,6 @@ class Request {
 	protected $normalUrlPrefix;
 
 	protected $isSecure;
-	protected $magicQuotes;
 
 	protected $shouldIEscapeStringValues;
 	//@var array - php $_FILES is messy and need to be in this way
@@ -28,7 +27,6 @@ class Request {
 		$this->relativeUrlRoot = null;
 		$this->urlPrefix       = $this->secureUrlPrefix = $this->normalUrlPrefix = null;
 		$this->requestMethod   = isset($_SERVER['REQUEST_METHOD']) ? $_SERVER['REQUEST_METHOD'] : 'GET'; //default method
-		$this->magicQuotes     = get_magic_quotes_gpc();
 	}
 
 	public function injectRouter(Router &$router) {
@@ -111,9 +109,6 @@ class Request {
 		if (is_null($value)) {
 			return $defaultValue;
 		}
-		if ($this->magicQuotes) {
-			$value = icUtil::stripslashes($value);
-		}
 		if ($escape) {
 			$value = icUtil::escape($value);
 			$value = icUtil::filterXSS($value);
@@ -126,9 +121,6 @@ class Request {
 		$value = $this->getValue($name, $method);
 		if (is_null($value)) {
 			return $defaultValue;
-		}
-		if ($this->magicQuotes) {
-			$value = icUtil::stripslashes($value);
 		}
 		if (preg_match($pattern, $value)) {
 			return $value;
@@ -377,7 +369,7 @@ class Request {
 
 	public function getCookie($name, $defaultValue = null) {
 		if (isset($_COOKIE[$name])) {
-			return !$this->magicQuotes ? $_COOKIE[$name] : cUtil::stripslashes($_COOKIE[$name]);
+			return $_COOKIE[$name];
 		}
 
 		return $defaultValue;

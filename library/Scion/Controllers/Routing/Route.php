@@ -1,88 +1,93 @@
 <?php
 namespace Scion\Controllers\Routing;
 
+use Scion\Controllers\Routing\Http\Constraint;
+use Scion\Controllers\Routing\Http\Controller;
+use Scion\Controllers\Routing\Http\Format;
+use Scion\Controllers\Routing\Http\Literal;
+use Scion\Controllers\Routing\Http\Method;
+use Scion\Controllers\Routing\Http\Pattern;
+use Scion\Controllers\Routing\Http\Regex;
+use Scion\Controllers\Routing\Http\Scheme;
+
 class Route {
 	const ANY_KEY     = '__any';
 	const ANY_PATTERN = '(?P<__any>.*)';
 
-	protected $findPattern;
-	protected $createPattern;
+
 	protected $base;
 	/*
 	 * route name must be descriptive, because it is using for creating urls...
 	 */
 	protected $name;
-	protected $parameters;
-	protected $defaultMatchedParameters;
-	protected $matchedParameters;
+
 	protected $allowAdditionalParameters;
+
+	private $_matchedParameters;
+	private $_defaultMatchedParameters = [];
+	private $_constraints = [];
+	private $_scheme = null;
+	private $_regex = null;
+	private $_method = null;
+	private $_format = null;
+	private $_controller = null;
+	private $_createPattern;
 
 	/**
 	 * Name of parameters must contains only letters and numbers!
-	 * @param string $name  name of route - something descriptive
-	 * @param array  $json
+	 * @param string    $name  name of route - something descriptive
+	 * @param \stdClass $json
 	 */
-	public function __construct($name, array $json) {
+	public function __construct($name, \stdClass $json) {
 		$this->name = $name;
 
-		// defaults matched parameters
-		$this->defaultMatchedParameters = [];
-		if (isset($json['options']) && isset($json['options']['defaults'])) {
-			$this->defaultMatchedParameters = $json['options']['defaults'];
+		// Add pattern
+		if (property_exists($json, 'pattern')) {
+			$pattern                         = new Pattern($json->pattern);
+			$this->allowAdditionalParameters = $pattern->_additionalParameters;
+			$this->_createPattern             = $pattern->_pattern;
 		}
 
-		// Add controller value to parameters
-		if (isset($json['options']['controller'])) {
-			$this->defaultMatchedParameters = array_merge($this->defaultMatchedParameters, ['controller' => $json['options']['controller']]);
-		}
+		// Add options
+		if (property_exists($json, 'options')) {
 
-		// Add format value to parameter
-		if (isset($json['options']['format'])) {
-			$this->defaultMatchedParameters = array_merge($this->defaultMatchedParameters, ['format' => $json['options']['format']]);
-		}
+			// Literal
+			if (property_exists($json->options, 'defaults')) {
+				$this->_defaultMatchedParameters = (new Literal($json->options->defaults))->_options;
+			}
 
-		// Add format value to parameter
-		if (isset($json['options']['method'])) {
-			$this->defaultMatchedParameters = array_merge($this->defaultMatchedParameters, ['method' => $json['options']['method']]);
-		}
+			// Controller + Method + Format
+			if (property_exists($json->options, 'controller')) {
+				$this->_controller = new Controller($json->options->controller);
 
-		//if create pattern has * on end of string than it means that additional parameters are allowed
-		$cpLen = strlen($json['pattern']);
-		if ($json['pattern'][$cpLen - 1] == '*') {
-			$this->allowAdditionalParameters = true;
-			//without last *, and / before * if its not begining of the string
-			$json['pattern'] = substr($json['pattern'], 0, $cpLen > 2 && $json['pattern'][$cpLen - 2] == '/' ? -2 : -1);
-		}
-		else {
-			$this->allowAdditionalParameters = false;
-		}
-		$this->createPattern = $json['pattern'];
-
-		// constraints
-		$this->parameters = [];
-		if (isset($json['options']) && isset($json['options']['constraints'])) {
-			$constraints = [];
-			foreach ($json['options']['constraints'] as $name => $value) {
-				if (!is_null($value)) {
-					$constraints[$name] = new RouteParameter($value);
+				// Method
+				if (property_exists($json->options, 'method')) {
+					$this->_method = new Method($this->_controller, $json->options->method);
 				}
-				else {
-					$constraints[$name] = null;
+
+				// Output Format
+				if (property_exists($json->options, 'format')) {
+					$this->_format = new Format($this->_controller, $json->options->format);
 				}
 			}
-			$this->parameters = $constraints;
-		}
 
-		// find pattern
-		$this->findPattern = null;
-		if (isset($json['options']) && isset($json['options']['regex'])) {
-			//new Regex($json['options']['regex']);
-			$this->findPattern = $json['options']['regex'];
-		}
+			// Constraints
+			if (property_exists($json->options, 'constraints')) {
+				foreach ($json->options->constraints as $constraintName => $constraintValue) {
+					$this->_constraints[$constraintName] = new Constraint($constraintValue);
+				}
+			}
 
-		//
-		if (isset($json['options']) && isset($json['options']['format'])) {
-			//new Format($json['options']['format']);
+			// Regex
+			if (property_exists($json->options, 'regex')) {
+				$this->_regex = new Regex($json->options->regex);
+			}
+
+			// Scheme
+			if (property_exists($json->options, 'scheme')) {
+				$this->_scheme = new Scheme($json->options->scheme);
+			}
+
 		}
 
 		// base
@@ -91,11 +96,11 @@ class Route {
 
 	/**
 	 * Check if this route can match provided url
-	 * @params: $url string - Url to match
-	 * @return: true if this route can match provided $url param
+	 * @param string $url Url to match
+	 * @return bool (true if this route can match provided $url param)
 	 */
 	public function match($url) {
-		//if we have static base compare with base first(faster comparation)
+		// if we have static base compare with base first(faster comparison)
 		if (!$this->base) {
 			$this->extractBase();
 		}
@@ -104,13 +109,35 @@ class Route {
 			return false;
 		}
 
-		$this->extractParameters(); //extract parameters if they are not yet extracted(or passed)
-		if (!$this->findPattern) //compile match pattern if not specified
-		{
+		// Check scheme
+		if ($this->_scheme instanceof Scheme) {
+			if ($this->_scheme->isValid() === false) {
+				return false;
+			}
+		}
+
+		// Check format
+		if ($this->_controller instanceof Controller && $this->_format instanceof Format) {
+			if (!$this->_format->validFormat()) {
+				return false;
+			}
+		}
+
+		// Check method
+		if ($this->_method instanceof Method) {
+			if (!$this->_method->isValidMethod()) {
+				return false;
+			}
+		}
+
+		// Compile match pattern if not specified
+		if (!$this->_regex instanceof Regex) {
 			$this->compileMatchPattern();
 		}
-		if (preg_match($this->findPattern, $url, $tMatchedParams)) {
-			$this->matchedParameters = array_merge($this->defaultMatchedParameters, array());
+
+		// Check Regex
+		if (preg_match($this->_regex, $url, $tMatchedParams)) {
+			$this->_matchedParameters = $this->_defaultMatchedParameters;
 
 			if (isset($tMatchedParams[self::ANY_KEY])) {
 				$this->parseAny($tMatchedParams[self::ANY_KEY]);
@@ -129,13 +156,11 @@ class Route {
 					$value = (bool)$value;
 				}
 
-
 				//skip no named matches
 				if (is_int($key)) {
 					continue;
 				}
-				//$this->matchedParameters[urldecode($key)] = urldecode($value);
-				$this->matchedParameters[urldecode($key)] = $value;
+				$this->_matchedParameters[urldecode($key)] = urldecode($value);
 			}
 
 			return true;
@@ -147,7 +172,7 @@ class Route {
 	protected function parseAny($value) {
 		//module, action and matched parameters
 		//are allowed to be specified through __any parameter
-		$notAllowed = array_keys($this->matchedParameters);
+		$notAllowed = array_keys($this->_matchedParameters);
 		//remove all characters after ?(and including) if ? exists
 		//this can produce errors if there is multiple ?, but that url is not valid, so we dont want to bother with it(same goes to & without ? in url)
 		$startOfGetPos = strrpos($value, '?');
@@ -160,7 +185,7 @@ class Route {
 			$key = urldecode($array[$i]);
 			//skip if key is 0, null, '', or in not allowed parameter names
 			if ($key && !in_array($key, $notAllowed)) {
-				$this->matchedParameters[$key] = urldecode($array[$i + 1]);
+				$this->_matchedParameters[$key] = urldecode($array[$i + 1]);
 			}
 			$i += 2;
 		}
@@ -172,42 +197,40 @@ class Route {
 	 * if value is same as default parameter
 	 * @param $params array of (key, value) pairs. Replace route parameters
 	 * @return string generated url
+	 * @throws \Exception
 	 */
 	public function generate($params) {
-		//extract parameters from createPattern if not specified
-		$this->extractParameters();
-
 		//put default parameters not specified in $params into $params
-		$mgParams = array_merge($this->defaultMatchedParameters, $params);
+		$mgParams = array_merge($this->_defaultMatchedParameters, $params);
 
-		//this is code from symfony its better to check missing parameters imediatelly
-		if (($diff = array_diff_key($this->parameters, $mgParams))) {
-			throw new \Exception(sprintf("Route with name %s, pattern %s has missing parameters (%s)", $this->name, $this->createPattern, implode(', ', array_keys($diff))));
+		//this is code from Symfony its better to check missing parameters immediately
+		if (($diff = array_diff_key($this->_constraints, $mgParams))) {
+			throw new \Exception(sprintf("Route with name %s, pattern %s has missing parameters (%s)", $this->name, $this->_createPattern, implode(', ', array_keys($diff))));
 		}
 
 		//
 		$tokens      = array();
 		$replaces    = array();
-		$url         = $this->createPattern;
+		$url         = $this->_createPattern;
 		$hasDefaults = false;
 
-		//!IMPORTANT: order of parameters match order of parameters in $createPattern
-		foreach ($this->parameters as $key => $icRouteParameterObject) {
+		//!IMPORTANT: order of parameters match order of parameters in $_createPattern
+		foreach ($this->_constraints as $key => $constraintObject) {
 			//throw exception if key is not in params
 			//if ( !array_key_exists($key, $mgParams) ) throw new \Exception("$key is not specified for route $this->name");
 			$value = $mgParams[$key];
 
 			// if parameter is last one and exactly the same value as value in defaultMatchedParameters
 			// than just clear this parameter from generated url
-			if (!isset($this->defaultMatchedParameters[$key]) || $this->defaultMatchedParameters[$key] != $value) {
+			if (!isset($this->_defaultMatchedParameters[$key]) || $this->_defaultMatchedParameters[$key] != $value) {
 				//if there is route parameter object for this parameter, parse its value with routeParameterObject otherwise just do urlencode
 				if (!$hasDefaults) {
-					$url = str_replace(':' . $key, !($icRouteParameterObject instanceof RouteParameter) ? urlencode($value) : $icRouteParameterObject->parseValue($value), $url);
+					$url = str_replace(':' . $key, !($constraintObject instanceof Constraint) ? urlencode($value) : $constraintObject->$value, $url);
 
 				}
 				else {
 					$tokens[]    = ':' . $key;
-					$replaces[]  = !($icRouteParameterObject instanceof RouteParameter) ? urlencode($value) : $icRouteParameterObject->parseValue($value);
+					$replaces[]  = !($constraintObject instanceof Constraint) ? urlencode($value) : $constraintObject->$value;
 					$url         = str_replace($tokens, $replaces, $url);
 					$tokens      = array();
 					$replaces    = array();
@@ -223,7 +246,7 @@ class Route {
 
 		//add additional at the end if route allows them
 		if ($this->allowAdditionalParameters) {
-			$params = array_diff_key($params, array_merge($this->parameters, $this->defaultMatchedParameters));
+			$params = array_diff_key($params, array_merge($this->_constraints, $this->_defaultMatchedParameters));
 
 			foreach ($params as $key => $value) {
 				$url .= '/' . urlencode($key) . '/' . urlencode($value);
@@ -248,18 +271,40 @@ class Route {
 
 	/**
 	 * Returns matched parameters (or matched parameters without default matches)
-	 * @param  boolean $withoutDefaults
 	 * @return array key, value
 	 */
-	public function getMatchedParameters($withoutDefaults = false) {
-		if (!$withoutDefaults) {
-			return $this->matchedParameters;
+	public function getMatchedParameters() {
+		$tMatArray['defaults'] = $this->_matchedParameters;
+
+		// Return controller parameter
+		if ($this->_controller instanceof Controller) {
+			$tMatArray['controller'] = (string)$this->_controller;
 		}
-		$tMatArray = array_merge($this->matchedParameters, array());
-		//remove all paremeters which are default
-		foreach ($this->defaultMatchedParameters as $key => $value) {
-			if ($tMatArray[$key] == $value) {
-				unset($tMatArray[$key]);
+
+		// Return format parameter
+		if ($this->_format instanceof Format) {
+			$tMatArray['format'] = (string)$this->_format;
+		}
+
+		// Return method parameter
+		if ($this->_method instanceof Method) {
+			$tMatArray['method'] = (string)$this->_method;
+		}
+
+		// Return scheme parameter
+		if ($this->_scheme instanceof Scheme) {
+			$tMatArray['scheme'] = (string)$this->_scheme;
+		}
+
+		// Return regex parameter
+		if ($this->_regex instanceof Regex) {
+			$tMatArray['regex'] = (string)$this->_regex;
+		}
+
+		// Return constraints parameter
+		if (!empty($this->_constraints)) {
+			foreach ($this->_constraints as $key => $value) {
+				$tMatArray['constraints'][$key] = (string)$value;
 			}
 		}
 
@@ -267,15 +312,15 @@ class Route {
 	}
 
 	public function getMatchedParam($name) {
-		return array_key_exists($name, $this->matchedParameters) ? $this->matchedParameters[$name] : null;
+		return array_key_exists($name, $this->_matchedParameters) ? $this->_matchedParameters[$name] : null;
 	}
 
 	public function setMatchedParam($name, $value) {
-		$this->matchedParameters[$name] = $value;
+		$this->_matchedParameters[$name] = $value;
 	}
 
 	public function removeMatchedParam($name) {
-		unset($this->matchedParameters[$name]);
+		unset($this->_matchedParameters[$name]);
 	}
 
 	public function getName() {
@@ -283,22 +328,11 @@ class Route {
 	}
 
 	/**
-	 * extract parameters from $this->createPattern
-	 * if this->parameters is not specified
-	 */
-	private function extractParameters() {
-		if ($this->parameters) {
-			return;
-		}
-		preg_match_all('/\:([A-Za-z0-9_]+)/', $this->createPattern, $matches);
-		$this->parameters = array_flip($matches[1]);
-	}
-
-	/* extract unmutable base from $this->createPattern
+	 * extract unmutable base from $this->_createPattern
 	 */
 	private function extractBase() {
-		$pos        = strpos($this->createPattern, ':');
-		$this->base = $pos !== false ? substr($this->createPattern, 0, $pos) : $this->createPattern;
+		$pos        = strpos($this->_createPattern, ':');
+		$this->base = $pos !== false ? substr($this->_createPattern, 0, $pos) : $this->_createPattern;
 	}
 
 	/**
@@ -309,7 +343,7 @@ class Route {
 		$hasDefaults     = false;
 
 		$findPattern = '';
-		$parts       = explode('/', trim($this->createPattern, '/'));
+		$parts       = explode('/', trim($this->_createPattern, '/'));
 		foreach ($parts as $part) {
 			//in one part of url we can have more than one key /:id-:name
 			preg_match_all('/\:([A-Za-z0-9_]+)/', $part, $matches);
@@ -320,10 +354,10 @@ class Route {
 				$replaces    = array();
 				$isInDefault = true;
 				foreach ($matches as $key) {
-					$patternPart = isset($this->parameters[$key]) && $this->parameters[$key] instanceof RouteParameter ? $this->parameters[$key]->getPattern() : '[^/]+';
+					$patternPart = isset($this->_constraints[$key]) && $this->_constraints[$key] instanceof Constraint ? $this->_constraints[$key]->getPattern() : '[^/]+';
 					$replaces[]  = '(?P<' . $key . '>' . $patternPart . ')';
 					$tokens[]    = ':' . $key;
-					$isInDefault = $isInDefault && array_key_exists($key, $this->defaultMatchedParameters);
+					$isInDefault = $isInDefault && array_key_exists($key, $this->_defaultMatchedParameters);
 				}
 
 				$part = str_replace($tokens, $replaces, $part);
@@ -373,7 +407,7 @@ class Route {
 		}
 
 		//if ( Router::$DEBUG ) echo htmlspecialchars('#^'.$findPattern.'$#').'<br />';
-		$this->findPattern = '#^' . $findPattern . '$#';
+		$this->_regex = new Regex('#^' . $findPattern . '$#');
 	}
 
 }

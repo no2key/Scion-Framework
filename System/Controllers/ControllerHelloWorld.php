@@ -4,14 +4,19 @@ namespace HelloWorld;
 class ControllerHelloWorld {
 
 	public function indexAction() {
-		return 'hello';
+
+		return 'hello index';
 	}
 
 	public function jsonAction() {
-		return json_encode('json');
+		return json_encode(['json' => 256]);
 	}
 
 	public function photoAction() {
+
+	}
+
+	public function homeAction() {
 
 	}
 }

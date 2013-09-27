@@ -15,30 +15,34 @@ class Format {
 	const FILTER_VALIDATE_JSON    = 'json';
 	const FILTER_VALIDATE_XML     = 'xml';
 	const FILTER_VALIDATE_INI     = 'ini';
+	const FILTER_VALIDATE_AJAX    = 'ajax';
 
 	private $_content;
 	private $_format;
-	public $_valid;
 
 	/**
 	 * Constructor
-	 *
-	 * @param        $content
-	 * @param string $format
+	 * @param Controller $controller
+	 * @param string     $format
 	 */
-	public function __construct($content, $format = 'text') {
-		$this->_content = $content;
+	public function __construct(Controller $controller, $format = 'text') {
+		$this->_content = $controller->_methodContent;
 		$this->_format  = $format;
+	}
 
-		$this->_valid = $this->_validateFormat();
+	/**
+	 * toString, get passed format
+	 * @return string
+	 */
+	public function __toString() {
+		return $this->_format;
 	}
 
 	/**
 	 * Validate each supported formats
-	 *
 	 * @return bool
 	 */
-	private function _validateFormat() {
+	public function validFormat() {
 		switch ($this->_format) {
 			case self::FILTER_VALIDATE_INT:
 			case self::FILTER_VALIDATE_INTEGER:
@@ -81,7 +85,11 @@ class Format {
 			case self::FILTER_VALIDATE_INI:
 				return $this->_iniValidate();
 				break;
+
+			case self::FILTER_VALIDATE_AJAX:
+				break;
 		}
+		return false;
 	}
 
 	/**
@@ -90,6 +98,10 @@ class Format {
 	 * @throws \Exception
 	 */
 	private function _jsonValidate() {
+		if (!is_string($this->_content)) {
+			return false;
+		}
+
 		// decode the JSON data
 		$result = json_decode($this->_content);
 
@@ -121,7 +133,8 @@ class Format {
 		}
 
 		if ($error !== '') {
-			throw new \Exception($error);
+			//throw new \Exception($error);
+
 			return false;
 		}
 
@@ -138,7 +151,7 @@ class Format {
 		try {
 			return new \SimpleXMLElement($this->_content);
 		}
-		catch (\Exception $e){
+		catch (\Exception $e) {
 			return false;
 		}
 	}

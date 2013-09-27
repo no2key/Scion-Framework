@@ -76,7 +76,7 @@ class Router {
 	 * @throws Exception if route with $routeName does not exist
 	 * @return string generated url
 	 */
-	public function generate($routeName, $params) {
+	public function generate($routeName, $params = []) {
 		if (!array_key_exists($routeName, $this->hashedRoutes)) {
 			throw new \Exception(sprintf("Route with name %s does not exist", $routeName));
 		}
@@ -126,11 +126,10 @@ class Router {
 
 	/**
 	 * Proxy for getMatchedParameters of matched route. Route must be matched before calling this!
-	 * @param boolean $withoutDefaults
 	 * if true default matched parameters are removed from matched parameters
 	 */
-	public function getParameters($withoutDefaults = false) {
-		return $this->matchedRoute->getMatchedParameters($withoutDefaults);
+	public function getParameters() {
+		return $this->matchedRoute->getMatchedParameters();
 	}
 
 	public function setParam($name, $value) {

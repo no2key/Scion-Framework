@@ -1,0 +1,8 @@
+{
+    "configuration": {
+        "framework": {
+            "autoloader": "config/autoload.json",
+            "router": "config/routing.json"
+        }
+    }
+}
