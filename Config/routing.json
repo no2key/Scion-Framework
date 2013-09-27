@@ -3,14 +3,14 @@
         "url": {
             "pattern": "/scheme.html",
             "options": {
-                "scheme": "https"
+                "scheme": "http"
             }
         },
         "hello": {
             "pattern": "/hello/:name",
             "options": {
                 "controller": "HelloWorld:ControllerHelloWorld:index",
-                "method": "POST"
+                "method": "GET"
             }
         },
         "json": {
@@ -42,7 +42,7 @@
                     }
                 },
                 "controller": "HelloWorld:ControllerHelloWorld:photo",
-                "method": "POST"
+                "method": "GET"
             }
         },
         "test": {
@@ -66,15 +66,17 @@
             "pattern": "/",
             "options": {
                 "defaults": {
+                    "module": "home",
                     "action": "index"
                 },
+                "controller": "HelloWorld:ControllerHelloWorld:home",
                 "regex": "#^/(?:page=(?P<page>[0-9]+))?$#"
             }
         },
         "format": {
-            "pattern": "/:year/:month/:day/:title.:format",
+            "pattern": "/:year/:month/:day/:title:format",
             "options": {
-                "default": {
+                "defaults": {
                     "year": 2012,
                     "month": 9,
                     "day": 24
