@@ -1,24 +1,20 @@
 <?php
 namespace Scion\Controllers\Routing\Http;
 
+use Scion\Models\Http\Request;
+
 class Method {
 
-	const METHOD_GET     = 'GET';
-	const METHOD_POST    = 'POST';
-	const METHOD_REQUEST = 'REQUEST';
-
 	private $_method;
-	private $_serverMethod;
+	private $_requestMethod;
 
 	/**
 	 * Constructor
-	 *
-	 * @param Controller $controller
-	 * @param            $method
+	 * @param $method
 	 */
-	public function __construct(Controller $controller, $method) {
-		$this->_method       = $method;
-		$this->_serverMethod = isset($_SERVER['REQUEST_METHOD']) ? $_SERVER['REQUEST_METHOD'] : 'GET';
+	public function __construct($method) {
+		$this->_method        = $method;
+		$this->_requestMethod = (new Request())->getMethod();
 	}
 
 	public function __toString() {
@@ -31,10 +27,10 @@ class Method {
 	 * @return bool
 	 */
 	public function isValidMethod() {
-		if ($this->_method == self::METHOD_GET || $this->_method == self::METHOD_POST) {
-			return $this->_method == $this->_serverMethod;
+		if ($this->_method == Request::METHOD_GET || $this->_method == Request::METHOD_POST) {
+			return $this->_method == $this->_requestMethod;
 		}
-		else if ($this->_method == self::METHOD_REQUEST) {
+		else if ($this->_method == Request::METHOD_REQUEST) {
 			return true;
 		}
 

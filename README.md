@@ -10,6 +10,3 @@ You need **PHP >= 5.5.0** because this framework use:
 * Namespaces
 * Traits
 * Short array syntax
-
-## Getting Started
-* [HelloWorld](https://github.com/emulienfou/Scion-Framework/wiki/HelloWorld)

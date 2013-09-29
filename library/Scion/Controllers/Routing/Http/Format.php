@@ -3,6 +3,7 @@ namespace Scion\Controllers\Routing\Http;
 
 class Format {
 
+	const FILTER_VALIDATE_STRING  = 'string';
 	const FILTER_VALIDATE_INT     = 'int';
 	const FILTER_VALIDATE_INTEGER = 'integer';
 	const FILTER_VALIDATE_BOOL    = 'bool';
@@ -44,6 +45,10 @@ class Format {
 	 */
 	public function validFormat() {
 		switch ($this->_format) {
+			case self::FILTER_VALIDATE_STRING:
+				return is_string($this->_content);
+			break;
+
 			case self::FILTER_VALIDATE_INT:
 			case self::FILTER_VALIDATE_INTEGER:
 				return filter_var($this->_content, FILTER_VALIDATE_INT);

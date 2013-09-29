@@ -1,34 +1,18 @@
 <?php
 namespace Scion\Controllers\Routing;
+use Scion\Models\Http\Request;
 
 class Router {
-	/**
-	 * @brief: Array collection of all route objects hashed by route name
-	 *
-	 * @var array of Route - key is route name
-	 */
+
 	protected $hashedRoutes = array();
-	/**
-	 * @brief: Array collection of all route objects
-	 *
-	 * @var array of Route
-	 */
 	protected $routes = array();
-
-	/**
-	 * @brief: Reference to matched Route object
-	 *
-	 * @var reference to Route
-	 */
 	protected $matchedRoute = null;
+	private $_request;
 
-	/*
-	 * set this to true if you want debuig output
-	 */
 	public static $DEBUG = 0;
 
 	public function __construct() {
-
+		$this->_request = new Request();
 	}
 
 	/**
@@ -40,8 +24,9 @@ class Router {
 		$this->routes[]                           = $newRoute;
 	}
 
-	/* Add routes to router
-	 * @param array $newRoutes array if Routes
+	/**
+	 * Add routes to router
+	 * @param array $newRoutes array if icRoutes
 	 */
 	public function addRoutes(array $newRoutes) {
 		foreach ($newRoutes as &$nr) {
@@ -53,10 +38,10 @@ class Router {
 	/**
 	 * Try to find match for url
 	 * also sets $this->matchedRoute which can be later retrieved
-	 * @param string $url Url to match
 	 * @return boolean true if route is matched
 	 */
-	public function match($url) {
+	public function match() {
+		$url                = $this->_request->getPath();
 		$this->matchedRoute = null;
 		foreach ($this->routes as &$route) {
 			if ($route->match($url)) {
@@ -72,8 +57,8 @@ class Router {
 	/**
 	 * Generates url depending on routeName and parameters
 	 * @param string $routeName
-	 * @param mixed $params - can be (key,value) array or string of url parameters
-	 * @throws Exception if route with $routeName does not exist
+	 * @param mixed  $params - can be (key,value) array or string of url parameters
+	 * @throws \Exception if route with $routeName does not exist
 	 * @return string generated url
 	 */
 	public function generate($routeName, $params = []) {
@@ -81,12 +66,17 @@ class Router {
 			throw new \Exception(sprintf("Route with name %s does not exist", $routeName));
 		}
 		//if $params is provided as string make array from it
-		//this is very bad(although can be easier for developer).
+		//this is very bad(although can be easier for developer). 
 		//Preparing $params as array IS THE BEST CHOICE!!!
 		if (!is_array($params)) {
 			$params = $this->stringToRouteParams($params);
 		}
 		$route = $this->hashedRoutes[$routeName];
+
+		if ($this->_request->isModeRewriteActive() === false) {
+			$this->_request->getPath();
+			return $this->_request->getBaseIndex() . $route->generate($params);
+		}
 
 		return $route->generate($params);
 	}
@@ -111,13 +101,14 @@ class Router {
 
 	/**
 	 * Check if route with name $name exists
-	 * @return boolean true or false
+	 * @param $name
+	 * @return bool
 	 */
 	public function isRouteExists($name) {
 		return array_key_exists($name, $this->hashedRoutes);
 	}
 
-	/*
+	/**
 	 * Check if there is matched route object
 	 */
 	public function gotMatchedRoute() {
@@ -126,10 +117,11 @@ class Router {
 
 	/**
 	 * Proxy for getMatchedParameters of matched route. Route must be matched before calling this!
+	 * @param boolean $withoutDefaults
 	 * if true default matched parameters are removed from matched parameters
 	 */
-	public function getParameters() {
-		return $this->matchedRoute->getMatchedParameters();
+	public function getParameters($withoutDefaults = false) {
+		return $this->matchedRoute->getMatchedParameters($withoutDefaults);
 	}
 
 	public function setParam($name, $value) {
@@ -145,8 +137,8 @@ class Router {
 	}
 
 	/**
-	 * returns matched route
-	 * @return Route or null
+	 * Returns matched route
+	 * @return icRoute or null
 	 */
 	public function getMatchedRoute() {
 		return $this->matchedRoute;
@@ -160,4 +152,5 @@ class Router {
 		$this->routes       = array();
 		$this->matchedRoute = null;
 	}
+
 }

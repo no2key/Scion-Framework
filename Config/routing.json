@@ -13,6 +13,17 @@
                 "method": "GET"
             }
         },
+        "home": {
+            "pattern": "/",
+            "options": {
+                "defaults": {
+                    "module": "home",
+                    "action": "index"
+                },
+                "controller": "HelloWorld:ControllerHelloWorld:home",
+                "regex": "#^/(?:page=(?P<page>[0-9]+))?$#"
+            }
+        },
         "json": {
             "pattern": "/datas",
             "options": {
@@ -60,17 +71,6 @@
                     "ref_id": "INT",
                     "tag": null
                 }
-            }
-        },
-        "home": {
-            "pattern": "/",
-            "options": {
-                "defaults": {
-                    "module": "home",
-                    "action": "index"
-                },
-                "controller": "HelloWorld:ControllerHelloWorld:home",
-                "regex": "#^/(?:page=(?P<page>[0-9]+))?$#"
             }
         },
         "format": {
