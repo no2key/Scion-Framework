@@ -35,12 +35,12 @@ class Json {
 	 * @return array
 	 */
 	public static function processConfigAutoload($jsonUrl) {
-		$datas   = [];
+		$data   = [];
 		$content = file_get_contents($jsonUrl);
 		foreach (self::decode($content, true)['autoload']['psr-0'] as $namespace => $includePath) {
-			$datas[$namespace] = $includePath;
+			$data[$namespace] = $includePath;
 		}
 
-		return $datas;
+		return $data;
 	}
 }

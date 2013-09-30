@@ -15,8 +15,6 @@ class Request {
 	private $_isModeRewriteActive = false;
 	private $_baseIndex;
 
-	//private $_
-
 	/**
 	 * Constructor
 	 */

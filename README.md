@@ -10,3 +10,5 @@ You need **PHP >= 5.5.0** because this framework use:
 * Namespaces
 * Traits
 * Short array syntax
+* Hash function **hash_pbkdf2**
+* Password hashing function **password_hash**
