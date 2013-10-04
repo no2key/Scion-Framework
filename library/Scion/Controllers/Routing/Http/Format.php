@@ -17,6 +17,7 @@ class Format {
 	const FILTER_VALIDATE_XML     = 'xml';
 	const FILTER_VALIDATE_INI     = 'ini';
 	const FILTER_VALIDATE_AJAX    = 'ajax';
+	const FILTER_VALIDATE_VOID    = 'void';
 
 	private $_content;
 	private $_format;
@@ -92,6 +93,10 @@ class Format {
 				break;
 
 			case self::FILTER_VALIDATE_AJAX:
+				break;
+
+			case self::FILTER_VALIDATE_VOID:
+				return true;
 				break;
 		}
 		return false;

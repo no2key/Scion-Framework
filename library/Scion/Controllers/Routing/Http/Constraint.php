@@ -33,7 +33,7 @@ class Constraint {
 	 */
 	public function __construct($value) {
 		if ($value instanceof \stdClass) {
-			$this->_type = $this->_replaceConstantsFromString(array_keys((array)$value)[0]);
+			$this->_type = constant('self::'.array_keys((array)$value)[0]);
 			//default for reg replace
 			if ($this->_type == self::REG_REPLACE && is_string(array_values((array)$value)[0])) {
 				$this->_additional = array(array_values((array)$value)[0], '-');
@@ -43,7 +43,7 @@ class Constraint {
 			$this->_additional = array_values((array)$value)[0];
 		}
 		else if (is_string($value)) {
-			$this->_type = $this->_replaceConstantsFromString($value);
+			$this->_type = constant('self::'.$value);
 		}
 		else if (is_null($value)) {
 			$this->_type = self::NULL;
@@ -137,17 +137,5 @@ class Constraint {
 			case self::ANY:
 				return '[^\/]+';
 		}
-	}
-
-	/**
-	 * Convert string constant name to the constant result
-	 * @param $string
-	 * @return int
-	 */
-	private function _replaceConstantsFromString($string) {
-		$search  = ['ANY', 'INT', 'FLOAT', 'REG_REPLACE', 'REG_MATCH', 'IN', 'NOT_IN'];
-		$replace = [self::ANY, self::INT, self::FLOAT, self::REG_REPLACE, self::REG_MATCH, self::IN, self::NOT_IN];
-
-		return (int)str_replace($search, $replace, $string);
 	}
 }

@@ -35,7 +35,7 @@ class Controller {
 	 * Call specified controller
 	 * @throws \Exception
 	 */
-	public function callController() {
+	public function callController($format) {
 		// Create a ReflectionClass
 		$controllerClass = new \ReflectionClass($this->_calledClass);
 
@@ -55,10 +55,14 @@ class Controller {
 		// Check and save content of the called method if exists, otherwise throw an Exception
 		if ($controllerClass->hasMethod($this->_calledMethod)) {
 			$this->_methodContent = (new \ReflectionMethod($instance, $this->_calledMethod))->invoke($instance);
-			//Check method return something, can't be null
-			if ($this->_methodContent === null) {
-				throw new \Exception('A called controller need to return something not null');
+
+			if ($format != null && $format != 'void') {
+				//Check method return something, can't be null
+				if ($this->_methodContent === null) {
+					throw new \Exception('A called controller need to return something not null');
+				}
 			}
+
 		}
 		else {
 			throw new \Exception('Method ' . $this->_calledClass . '\\' . $this->_calledMethod . '() not found!!!');
