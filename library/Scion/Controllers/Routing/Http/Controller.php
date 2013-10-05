@@ -56,7 +56,7 @@ class Controller {
 		if ($controllerClass->hasMethod($this->_calledMethod)) {
 			$this->_methodContent = (new \ReflectionMethod($instance, $this->_calledMethod))->invoke($instance);
 
-			if ($format != null && $format != 'void') {
+			if ($format != null || (is_string($format) && $format != 'void')) {
 				//Check method return something, can't be null
 				if ($this->_methodContent === null) {
 					throw new \Exception('A called controller need to return something not null');

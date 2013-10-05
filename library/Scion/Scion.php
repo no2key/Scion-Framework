@@ -10,10 +10,11 @@
 namespace Scion;
 
 use Scion\Controllers\Routing\Route;
-use Scion\Controllers\Routing\Router;
+use Scion\Models\Db\Database;
 use Scion\Models\File\Json;
 use Scion\Models\Loader\Autoloader;
 use Scion\Models\Loader\RouteLoader;
+use Scion\Views\TemplateEngine;
 
 define('SCION_DIR', __DIR__ . DIRECTORY_SEPARATOR);
 
@@ -46,12 +47,19 @@ class Scion {
 		// Init Autoloader
 		$this->_initAutoloader();
 
-		// Init Router
+		// Init Database
+		$this->_initDatabase();
+
+		// Init TemplateEngine
+		$this->_initTemplateEngine();
+
+		// Init Router always at the end
 		$this->_initRouter();
 	}
 
 	/**
 	 * Test version of PHP is greater than 5.5
+	 *
 	 * @return bool
 	 */
 	private function _checkPhpVersion() {
@@ -76,6 +84,25 @@ class Scion {
 	private function _initRouter() {
 		if (isset($this->_jsonConfiguration->configuration->framework->router)) {
 			RouteLoader::registerRoutes($this->_jsonConfiguration->configuration->framework->router);
+		}
+	}
+
+	/**
+	 * Initialize database system
+	 */
+	private function _initDatabase() {
+		if (isset($this->_jsonConfiguration->configuration->framework->database)) {
+			Database::init($this->_jsonConfiguration->configuration->framework->database);
+		}
+	}
+
+	/**
+	 * Initialize template engine
+	 */
+	private function _initTemplateEngine() {
+		if (isset($this->_jsonConfiguration->configuration->framework->template)) {
+			TemplateEngine::getInstance();
+			TemplateEngine::init($this->_jsonConfiguration->configuration->framework->template);
 		}
 	}
 }
