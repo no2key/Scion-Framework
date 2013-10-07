@@ -3,4 +3,4 @@
 require 'library/Scion/Scion.php';
 
 // Instantiate a Scion application
-$app = new \Scion\Scion('config/configuration.json');
+$app = new \Scion\Scion('Album/config/configuration.json');

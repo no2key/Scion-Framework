@@ -4,7 +4,7 @@ namespace Scion\Views;
 use Dwoo\Core;
 use Dwoo\ITemplate;
 use Dwoo\Template\File;
-use Scion\Models\File\Json;
+use Scion\File\Json;
 
 class TemplateEngine extends Core {
 

@@ -9,11 +9,11 @@
  */
 namespace Scion;
 
-use Scion\Controllers\Routing\Route;
-use Scion\Models\Db\Database;
-use Scion\Models\File\Json;
-use Scion\Models\Loader\Autoloader;
-use Scion\Models\Loader\RouteLoader;
+use Scion\Routing\Route;
+use Scion\Db\Database;
+use Scion\File\Json;
+use Scion\Loader\Autoloader;
+use Scion\Loader\RouteLoader;
 use Scion\Views\TemplateEngine;
 
 define('SCION_DIR', __DIR__ . DIRECTORY_SEPARATOR);
@@ -70,7 +70,7 @@ class Scion {
 	 * Initialize autoloader system
 	 */
 	private function _initAutoloader() {
-		require __DIR__ . '/Models/Loader/AutoLoader.php';
+		require __DIR__ . '/Loader/AutoLoader.php';
 		$autoload = new AutoLoader('library/Scion/Resources/autoload.json');
 		if (isset($this->_jsonConfiguration->configuration->framework->autoloader)) {
 			$autoload->registerFromJson($this->_jsonConfiguration->configuration->framework->autoloader);
