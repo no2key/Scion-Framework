@@ -78,7 +78,7 @@ class Router {
 			return $this->_request->getBaseIndex() . $route->generate($params);
 		}
 
-		return $route->generate($params);
+		return $this->_request->getRelativeUrlRoot() . $route->generate($params);
 	}
 
 	/**
