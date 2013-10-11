@@ -30,31 +30,59 @@ class Scion {
 	 */
 	const MINIMUM_PHP_VERSION = '5.5';
 
-	private $_jsonConfiguration;
+	private static $_jsonConfiguration;
 
 	/**
-	 * Constructor
+	 * Used to call private static methods below
+	 * @param string $name
+	 * @param mixed $arguments
 	 */
-	public function __construct($jsonUrl) {
+	public static function __callStatic($name, $arguments) {
 		// Check PHP version greater than 5.5
-		if ($this->_checkPhpVersion() === false) {
-			die('You need PHP 5.5 minimum.<br>Current version: ' . PHP_VERSION);
+		if (self::_checkPhpVersion() === false) {
+			die('You need PHP ' . self::MINIMUM_PHP_VERSION . ' minimum.<br>Current version: ' . PHP_VERSION);
 		}
 
-		// Load content from json file
-		$this->_jsonConfiguration = json_decode(file_get_contents($jsonUrl));
+		if (empty($arguments)) {
+			self::$name();
+		}
+		else {
+			$reflectionMethod = new \ReflectionMethod(__CLASS__, $name);
+			$reflectionMethod->setAccessible(true);
+			$reflectionMethod->invokeArgs(null, $arguments);
+		}
+	}
 
-		// Init Autoloader
-		$this->_initAutoloader();
+	/**
+	 * Initialize autoloader system
+	 * @param null|string $jsonUrl
+	 */
+	private static function initAutoloader($jsonUrl = null) {
+		require __DIR__ . DIRECTORY_SEPARATOR . 'Loader/AutoLoader.php';
+		$autoload = new AutoLoader(__DIR__ . DIRECTORY_SEPARATOR . 'Resources/autoload.json');
+		if ($jsonUrl !== null) {
+			self::$_jsonConfiguration = json_decode(file_get_contents($jsonUrl));
+			if (isset(self::$_jsonConfiguration->configuration->framework->autoloader)) {
+				$autoload->registerFromJson(self::$_jsonConfiguration->configuration->framework->autoloader);
+			}
+		}
+		$autoload->register();
+	}
 
-		// Init Database
-		$this->_initDatabase();
+	/**
+	 * Initialize routing system
+	 * @param null|string $jsonUrl
+	 */
+	private static function initRouter($jsonUrl = null) {
+		if (isset(self::$_jsonConfiguration->configuration->framework->router)) {
+			RouteLoader::registerRoutes(self::$_jsonConfiguration->configuration->framework->router);
+		}
 
-		// Init TemplateEngine
-		$this->_initTemplateEngine();
+		if ($jsonUrl !== null) {
+			RouteLoader::registerRoutes($jsonUrl);
+		}
 
-		// Init Router always at the end
-		$this->_initRouter();
+		RouteLoader::processRoutes();
 	}
 
 	/**
@@ -62,47 +90,15 @@ class Scion {
 	 *
 	 * @return bool
 	 */
-	private function _checkPhpVersion() {
+	private static function _checkPhpVersion() {
 		return version_compare(PHP_VERSION, self::MINIMUM_PHP_VERSION) >= 0;
 	}
 
 	/**
-	 * Initialize autoloader system
+	 * Get json configuration
+	 * @return mixed
 	 */
-	private function _initAutoloader() {
-		require __DIR__ . '/Loader/AutoLoader.php';
-		$autoload = new AutoLoader('library/Scion/Resources/autoload.json');
-		if (isset($this->_jsonConfiguration->configuration->framework->autoloader)) {
-			$autoload->registerFromJson($this->_jsonConfiguration->configuration->framework->autoloader);
-		}
-		$autoload->register();
-	}
-
-	/**
-	 * Initialize routing system
-	 */
-	private function _initRouter() {
-		if (isset($this->_jsonConfiguration->configuration->framework->router)) {
-			RouteLoader::registerRoutes($this->_jsonConfiguration->configuration->framework->router);
-		}
-	}
-
-	/**
-	 * Initialize database system
-	 */
-	private function _initDatabase() {
-		if (isset($this->_jsonConfiguration->configuration->framework->database)) {
-			Database::init($this->_jsonConfiguration->configuration->framework->database);
-		}
-	}
-
-	/**
-	 * Initialize template engine
-	 */
-	private function _initTemplateEngine() {
-		if (isset($this->_jsonConfiguration->configuration->framework->template)) {
-			TemplateEngine::getInstance();
-			TemplateEngine::init($this->_jsonConfiguration->configuration->framework->template);
-		}
+	public static function getJsonConfiguration() {
+		return self::$_jsonConfiguration;
 	}
 }
