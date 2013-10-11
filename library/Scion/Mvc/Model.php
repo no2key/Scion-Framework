@@ -1,6 +1,7 @@
 <?php
 namespace Scion\Mvc;
 
+use Scion\Authentication\Auth;
 use Scion\Db\Database;
 
 trait Model {
@@ -16,5 +17,9 @@ trait Model {
 
 	final public function getNoSql($instance = 'default') {
 		return Database::initNoSql($instance);
+	}
+
+	final public function getAuth($providerObj) {
+		return Auth::getInstance($providerObj);
 	}
 }

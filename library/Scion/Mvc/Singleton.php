@@ -2,6 +2,9 @@
 namespace Scion\Mvc;
 
 trait Singleton {
+
+	protected static $instance = null;
+
 	/**
 	 * private construct, generally defined by using class
 	 *
@@ -18,10 +21,19 @@ trait Singleton {
 	 * @static
 	 */
 	public static function getInstance() {
-		static $_instance = null;
-		$class = __CLASS__;
+		if (self::$instance === null) {
+			if (func_num_args() > 0) {
+				$reflectionClass = new \ReflectionClass(__CLASS__);
+				$reflectionMethod = new \ReflectionMethod(__CLASS__, '__construct');
+				$reflectionMethod->setAccessible(true);
+				$reflectionMethod->invokeArgs($reflectionClass->newInstanceWithoutConstructor(), func_get_args());
+			}
+			else {
+				self::$instance = new self();
+			}
+		}
 
-		return $_instance ? : $_instance = new $class();
+		return self::$instance;
 	}
 
 	/**
