@@ -34,14 +34,6 @@ class FileIterator implements \Iterator {
 	private $_filePointer;
 
 	/**
-	 * File data
-	 *
-	 * @var     array
-	 * @access  private
-	 */
-	private $_fileData;
-
-	/**
 	 * Path to source file
 	 *
 	 * @var     string
@@ -119,12 +111,12 @@ class FileIterator implements \Iterator {
 	 * Implement Iterator::next()
 	 *
 	 * @return  void
-	 * @throws  Exception
+	 * @throws  \Exception
 	 * @see     Iterator::next()
 	 */
 	public function next() {
 		if (!is_resource($this->_filePointer)) {
-			throw new Exception('Invalid file handler. ' . 'Either you reached the end of file or the stream is invalid. ' . 'Use rewind() to return to first element or valid() to check whether the stream is valid');
+			throw new \Exception('Invalid file handler. ' . 'Either you reached the end of file or the stream is invalid. ' . 'Use rewind() to return to first element or valid() to check whether the stream is valid');
 		}
 
 		if (!feof($this->_filePointer)) {
@@ -212,7 +204,7 @@ class FileIterator implements \Iterator {
 	 * @param   string $source
 	 * @return  resource
 	 * @access  private
-	 * @throws  Exception
+	 * @throws  \Exception
 	 */
 	private function _openPointer($source = null) {
 		if ($source !== null) {
@@ -225,11 +217,11 @@ class FileIterator implements \Iterator {
 			}
 			$this->_filePointer = fopen($this->_source, 'r');
 		}
-		catch (Exception $e) {
+		catch (\Exception $e) {
 			if ($this->_verbose) {
 				echo "failed!\n";
 			}
-			throw new Exception(sprintf("File '%s' cannot be read.", $this->_source));
+			throw new \Exception(sprintf("File '%s' cannot be read.", $this->_source));
 		}
 
 		if ($this->_verbose) {
