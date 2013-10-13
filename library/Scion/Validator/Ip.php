@@ -11,30 +11,6 @@ class Ip {
 	}
 
 	/**
-	 * Return IP address
-	 * @return string
-	 */
-	public function getIp() {
-		if (isset($_SERVER['HTTP_CLIENT_IP']) && $this->isValid($_SERVER['HTTP_CLIENT_IP'])) {
-			return $_SERVER['HTTP_CLIENT_IP'];
-		}
-		if (isset($_SERVER['HTTP_X_FORWARDED']) && $this->isValid($_SERVER['HTTP_X_FORWARDED'])) {
-			return $_SERVER['HTTP_X_FORWARDED'];
-		}
-		if (isset($_SERVER['HTTP_X_CLUSTER_CLIENT_IP']) && $this->isValid($_SERVER['HTTP_X_CLUSTER_CLIENT_IP'])) {
-			return $_SERVER['HTTP_X_CLUSTER_CLIENT_IP'];
-		}
-		if (isset($_SERVER['HTTP_FORWARDED_FOR']) && $this->isValid($_SERVER['HTTP_FORWARDED_FOR'])) {
-			return $_SERVER['HTTP_FORWARDED_FOR'];
-		}
-		if (isset($_SERVER['HTTP_FORWARDED']) && $this->isValid($_SERVER['HTTP_FORWARDED'])) {
-			return $_SERVER['HTTP_FORWARDED'];
-		}
-
-		return $_SERVER['REMOTE_ADDR'];
-	}
-
-	/**
 	 * Returns true if and only if $value is a valid IP address
 	 * @param $value
 	 * @return bool
