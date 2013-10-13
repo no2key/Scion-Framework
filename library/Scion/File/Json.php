@@ -37,8 +37,11 @@ class Json {
 	public static function processConfigAutoload($jsonUrl) {
 		$data   = [];
 		$content = file_get_contents($jsonUrl);
-		foreach (self::decode($content, true)['autoload']['psr-0'] as $namespace => $includePath) {
-			$data[$namespace] = $includePath;
+
+		if ($content != '') {
+			foreach (self::decode($content, true)['autoload']['psr-0'] as $namespace => $includePath) {
+				$data[$namespace] = $includePath;
+			}
 		}
 
 		return $data;

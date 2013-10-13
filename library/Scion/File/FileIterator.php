@@ -12,7 +12,7 @@ namespace Scion\File;
  * @license     http://creativecommons.org/licenses/LGPL/2.1/ LGPL License 2.1
  * @link        http://www.simonecarletti.com/code/fileiterator/ FileIterator
  */
-class FileIterator implements Iterator {
+class FileIterator implements \Iterator {
 
 	/** File row size */
 	const ROW_SIZE = 4096;

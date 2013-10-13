@@ -54,16 +54,40 @@ class Scion {
 	}
 
 	/**
+	 * Set json configuration
+	 * @param $jsonUrl
+	 */
+	public static function setConfiguration($jsonUrl) {
+		self::$_jsonConfiguration = json_decode(file_get_contents($jsonUrl));
+	}
+
+	/**
+	 * Get json configuration
+	 * @return mixed
+	 */
+	public static function getJsonConfiguration() {
+		return self::$_jsonConfiguration;
+	}
+
+	/**
 	 * Initialize autoloader system
 	 * @param null|string $jsonUrl
 	 */
-	private static function initAutoloader($jsonUrl = null) {
+	protected static function initAutoloader($jsonUrl = null) {
 		require __DIR__ . DIRECTORY_SEPARATOR . 'Loader/AutoLoader.php';
 		$autoload = new AutoLoader(__DIR__ . DIRECTORY_SEPARATOR . 'Resources/autoload.json');
+
+		// Get autoload json file from configuration.json
+		if (isset(self::$_jsonConfiguration->configuration->framework->autoloader)) {
+
+			$autoload->registerFromJson(self::$_jsonConfiguration->configuration->framework->autoloader);
+		}
+
+		// Get json configuration passed in parameter
 		if ($jsonUrl !== null) {
-			self::$_jsonConfiguration = json_decode(file_get_contents($jsonUrl));
-			if (isset(self::$_jsonConfiguration->configuration->framework->autoloader)) {
-				$autoload->registerFromJson(self::$_jsonConfiguration->configuration->framework->autoloader);
+			$autoloaderConfiguration = json_decode(file_get_contents($jsonUrl));
+			if (isset($autoloaderConfiguration->configuration->framework->autoloader)) {
+				$autoload->registerFromJson($autoloaderConfiguration->configuration->framework->autoloader);
 			}
 		}
 		$autoload->register();
@@ -73,7 +97,7 @@ class Scion {
 	 * Initialize routing system
 	 * @param null|string $jsonUrl
 	 */
-	private static function initRouter($jsonUrl = null) {
+	protected static function initRouter($jsonUrl = null) {
 		if (isset(self::$_jsonConfiguration->configuration->framework->router)) {
 			RouteLoader::registerRoutes(self::$_jsonConfiguration->configuration->framework->router);
 		}
@@ -92,13 +116,5 @@ class Scion {
 	 */
 	private static function _checkPhpVersion() {
 		return version_compare(PHP_VERSION, self::MINIMUM_PHP_VERSION) >= 0;
-	}
-
-	/**
-	 * Get json configuration
-	 * @return mixed
-	 */
-	public static function getJsonConfiguration() {
-		return self::$_jsonConfiguration;
 	}
 }
