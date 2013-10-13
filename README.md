@@ -7,6 +7,7 @@ Scion is easy to use for both beginners and professionals. This framework use th
 
 ## System Requirements
 You need **PHP >= 5.5.0** because this framework use:
+* Anonymous functions
 * Namespaces
 * Traits
 * Short array syntax

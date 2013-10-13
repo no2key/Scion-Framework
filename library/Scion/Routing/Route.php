@@ -31,16 +31,20 @@ class Route {
 	 * Name of parameters must contains only letters and numbers!
 	 * @param string    $name  name of route - something descriptive
 	 * @param \stdClass $json
+	 * @throws \Exception
 	 */
 	public function __construct($name, \stdClass $json) {
 		$this->_name = $name;
 
-		// Add pattern
-		if (property_exists($json, 'pattern')) {
-			$pattern                          = new Pattern($json->pattern);
-			$this->_allowAdditionalParameters = $pattern->_additionalParameters;
-			$this->_createPattern             = $pattern->_pattern;
+
+		if (!property_exists($json, 'pattern')) {
+			throw new \Exception('Pattern property must be specified !');
 		}
+
+		// Add pattern
+		$pattern                          = new Pattern($json->pattern);
+		$this->_allowAdditionalParameters = $pattern->_additionalParameters;
+		$this->_createPattern             = $pattern->_pattern;
 
 		// Add options
 		if (property_exists($json, 'options')) {

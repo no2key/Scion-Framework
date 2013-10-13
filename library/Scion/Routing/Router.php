@@ -144,6 +144,10 @@ class Router {
 		return $this->matchedRoute;
 	}
 
+	public function getHashedRoutes() {
+		return $this->hashedRoutes;
+	}
+
 	/**
 	 * clears all routes
 	 */
