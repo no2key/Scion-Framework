@@ -2,13 +2,17 @@
 namespace Scion\Authentication\Adapter\DbTable;
 
 use Scion\Db\Pdo;
+use Scion\Math\Rand;
+use Scion\Stdlib\DateTime;
 
 class User {
 
 	private $_dbh;
+	private $_activation;
 
-	public function __construct($dbh) {
+	public function __construct($dbh, Activation $activation) {
 		$this->_dbh = $dbh;
+		$this->_activation = $activation;
 	}
 
 	/**
@@ -17,7 +21,7 @@ class User {
 	 * @return array|bool
 	 */
 	public function getUserData($username) {
-		$data = $this->_dbh->from('users')->select(null)->select('id, password, email, salt, lang, isactive')->where('username = ?', $username)->execute()->fetch(Pdo::FETCH_ASSOC);
+		$data = $this->_dbh->from('users')->select(null)->select('id, password, email, salt, lang, isactive, reg_date')->where('username = ?', $username)->execute()->fetch(Pdo::FETCH_ASSOC);
 
 		if ($data) {
 			$data['username'] = $username;
@@ -83,22 +87,21 @@ class User {
 	* @param string $password
 	* @return int $uid
 	*/
-	/*public function addUser($email, $username, $password) {
+	public function addUser($email, $username, $password) {
 		$username = htmlentities($username);
 		$email    = htmlentities($email);
 
-		$salt = $this->getRandomKey(20);
+		$salt = Rand::getBytes(20);
 
-		$lang = $this->detectLang();
+		$lang = 'en';
 
-		$query = $this->dbh->prepare("INSERT INTO " . $this->config->table_users . " (username, password, email, salt, lang) VALUES (?, ?, ?, ?, ?)");
-		$query->execute(array($username, $password, $email, $salt, $lang));
+		$this->_dbh->insertInto('users', ['username' => $username, 'password' => $password, 'email' => $email, 'salt' => $salt, 'lang' => $lang, 'reg_date' => (new DateTime())->now(DateTime::MYSQL_DATETIME)])->execute();
 		$user = $this->getUserData($username);
 
-		$this->addActivation($user['id'], $email);
+		$this->_activation->add($user['id'], $email);
 
 		return $user['id'];
-	}*/
+	}
 
 	/**
 	* Changes a user's password

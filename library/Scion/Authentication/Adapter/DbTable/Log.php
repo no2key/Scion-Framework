@@ -19,7 +19,16 @@ class Log {
 	* @return bool
 	*/
 	public function addNew($uid = 'UNKNOWN', $action, $info) {
-		if (strlen($action) == 0 || strlen($action) > 100 || strlen($info) == 0 || strlen($info) > 1000) {
+		if (strlen($action) == 0) {
+			return false;
+		}
+		else if (strlen($action) > 100) {
+			return false;
+		}
+		else if (strlen($info) == 0) {
+			return false;
+		}
+		else if (strlen($info) > 1000) {
 			return false;
 		}
 		else {

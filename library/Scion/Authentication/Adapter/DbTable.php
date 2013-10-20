@@ -1,8 +1,10 @@
 <?php
 namespace Scion\Authentication\Adapter;
 
+use Scion\Authentication\Adapter\DbTable\Activation;
 use Scion\Authentication\Adapter\DbTable\Attempt;
 use Scion\Authentication\Adapter\DbTable\Log;
+use Scion\Authentication\Adapter\DbTable\Registration;
 use Scion\Authentication\Adapter\DbTable\Session;
 use Scion\Authentication\Adapter\DbTable\User;
 use Scion\Crypt\Hash;
@@ -25,30 +27,27 @@ class DbTable implements AdapterInterface {
 	private $_log;
 	private $_session;
 	private $_user;
+	private $_activation;
 
 	protected function __construct($dbh) {
 		if (!$dbh instanceof AbstractProvider) {
 			throw new \Exception('$provider must be a instance of a valid provider (mysql, sqlite, ...)');
 		}
-		$this->_dbh      = $dbh;
-		$this->_attempts = new Attempt($dbh);
-		$this->_log      = new Log($dbh);
-		$this->_session  = new Session($dbh);
-		$this->_user     = new User($dbh);
+		$this->_dbh          = $dbh;
+		$this->_attempts     = new Attempt($dbh);
+		$this->_log          = new Log($dbh);
+		$this->_session      = new Session($dbh);
+		$this->_activation   = new Activation($dbh);
+		$this->_user         = new User($dbh, $this->_activation);
 	}
 
 	/**
 	 * Return true is user is logged in, otherwise return false;
+	 * @param $hash
 	 * @return bool
 	 */
-	public function isLoggedIn() {
-		if (isset($_COOKIE['auth_session'])) {
-			$hash = $_COOKIE['auth_session'];
-
-			return $this->_checkSession($hash);
-		}
-
-		return false;
+	public function isLoggedIn($hash) {
+		return $this->_checkSession($hash);
 	}
 
 	/**
@@ -138,8 +137,7 @@ class DbTable implements AdapterInterface {
 	 * Logs out the session, identified by hash
 	 * @return bool
 	 */
-	public function logout() {
-		$hash = $_COOKIE['auth_session'];
+	public function logout($hash) {
 		if (strlen($hash) != 40) {
 			return false;
 		}
@@ -161,107 +159,10 @@ class DbTable implements AdapterInterface {
 		return $this->_user;
 	}
 
-	/**
-	* Creates a new user, adds them to database
-	* @param string $email
-	* @param string $username
-	* @param string $password (MUST be already twice hashed with SHA1 : Ideally client side with JS)
-	* @return array $return
-	*/
-	/*public function register($email, $username, $password) {
-		$return = array();
-
-		if ($this->isBlocked()) {
-			$return['code'] = 0;
-
-			return $return;
-		}
-		else {
-			if (strlen($email) == 0) {
-				$return['code'] = 1;
-				$this->addAttempt();
-
-				return $return;
-			}
-			elseif (strlen($email) > 100) {
-				$return['code'] = 1;
-				$this->addAttempt();
-
-				return $return;
-			}
-			elseif (strlen($email) < 3) {
-				$return['code'] = 1;
-				$this->addAttempt();
-
-				return $return;
-			}
-			elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-				$return['code'] = 1;
-				$this->addAttempt();
-
-				return $return;
-			}
-			elseif (strlen($username) == 0) {
-				$return['code'] = 1;
-				$this->addAttempt();
-
-				return $return;
-			}
-			elseif (strlen($username) > 30) {
-				$return['code'] = 1;
-				$this->addAttempt();
-
-				return $return;
-			}
-			elseif (strlen($username) < 3) {
-				$return['code'] = 1;
-				$this->addAttempt();
-
-				return $return;
-			}
-			elseif (strlen($password) != 40) {
-				$return['code'] = 1;
-				$this->addAttempt();
-
-				return $return;
-			}
-			else {
-				$password = $this->getHash($password);
-
-				if (!$this->isEmailTaken($email)) {
-					if (!$this->isUsernameTaken($username)) {
-						$uid = $this->addUser($email, $username, $password);
-
-						$this->addNewLog($uid, "REGISTER_SUCCESS", "Account created successfully, activation email sent.");
-
-						$return['code']  = 4;
-						$return['email'] = $email;
-
-						return $return;
-
-					}
-					else {
-						$this->addAttempt();
-
-						$this->addNewLog("", "REGISTER_FAIL_USERNAME", "User attempted to register new account with the username : {$username} -> Username already in use");
-
-						$return['code'] = 3;
-
-						return $return;
-					}
-				}
-				else {
-					$this->addAttempt();
-
-					$this->addNewLog("", "REGISTER_FAIL_EMAIL", "User attempted to register new account with the email : {$email} -> Email already in use");
-
-					$return['code'] = 2;
-
-					return $return;
-				}
-			}
-		}
-	}*/
+	public function register($email, $username, $password) {
+		$this->_registration = new Registration($this->_dbh, $this->_attempts, $this->_user, $this->_log);
+		$this->_registration->register($email, $username, $password);
+	}
 
 	/**
 	 * Function to check if a session is valid

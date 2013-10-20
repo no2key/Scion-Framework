@@ -1,12 +1,15 @@
 <?php
 namespace Scion\Authentication\Adapter\DbTable;
 
+use Scion\Db\Pdo;
+use Scion\Math\Rand;
+
 class Activation {
 
 	private $_dbh;
 
-	public function __construct() {
-
+	public function __construct($dbh) {
+		$this->_dbh = $dbh;
 	}
 
 	/**
@@ -102,16 +105,14 @@ class Activation {
 	* @param string $email
 	* @return boolean
 	*/
-	/*private function addActivation($uid, $email) {
-		$activekey = $this->getRandomKey(20);
+	public function add($uid, $email) {
+		$activekey = Rand::getBytes(20);
 
-		if ($this->isUserActivated($uid)) {
+		if ($this->_isUserActivated($uid)) {
 			return false;
 		}
 		else {
-			$query = $this->dbh->prepare("SELECT expiredate FROM " . $this->config->table_activations . " WHERE uid = ?");
-			$query->execute(array($uid));
-			$row        = $query->fetch(\PDO::FETCH_ASSOC);
+			$row        = $this->_dbh->from('activations')->select(null)->select('expiredate')->where('uid', $uid)->execute()->fetch(Pdo::FETCH_ASSOC);
 			$expiredate = $row['expiredate'];
 
 			if (count($expiredate) > 0) {
@@ -122,18 +123,17 @@ class Activation {
 					return false;
 				}
 				else {
-					$this->deleteUserActivations($uid);
+					$this->_deleteUserActivations($uid);
 				}
 			}
 
 			$expiredate = date("Y-m-d H:i:s", strtotime("+1 day"));
 
-			$query  = $this->dbh->prepare("INSERT INTO " . $this->config->table_activations . " (uid, activekey, expiredate) VALUES (?, ?, ?)");
-			$return = $query->execute(array($uid, $activekey, $expiredate));
+			$return = $this->_dbh->insertInto('activations', ['uid' => $uid, 'activekey' => $activekey, 'expiredate' => $expiredate])->execute();
 
 			if ($return) {
 				//Initialize Handler which loads language
-				$emailTemplate = new Localization\Handler(array('base_url' => $this->config->base_url,
+				/*$emailTemplate = new Localization\Handler(array('base_url' => $this->config->base_url,
 																'key'      => $activekey
 														  ), $this->config->lang);
 				//Get the language template
@@ -141,41 +141,36 @@ class Activation {
 				//Get array with body, head, and subject
 				$emailTemplate = $emailTemplate->getActivationEmail();
 
-				@mail($email, $emailTemplate['subject'], $emailTemplate['body'], $emailTemplate['head']);
+				@mail($email, $emailTemplate['subject'], $emailTemplate['body'], $emailTemplate['head']);*/
 			}
 
 			return $return;
 		}
-	}*/
+	}
 
 	/**
 	* Deletes all activation entries for a user
 	* @param int $uid
 	* @return boolean
 	*/
-	/*private function deleteUserActivations($uid) {
-		$query  = $this->dbh->prepare("DELETE FROM " . $this->config->table_activations . " WHERE uid = ?");
-		$return = $query->execute(array($uid));
-
-		return $return;
-	}*/
+	private function _deleteUserActivations($uid) {
+		return $this->_dbh->deleteFrom('activations')->where('uid', $uid)->execute();
+	}
 
 	/**
 	* Checks if a user account is activated based on uid
 	* @param int $uid
 	* @return boolean
 	*/
-	/*private function isUserActivated($uid) {
-		$query = $this->dbh->prepare("SELECT isactive FROM " . $this->config->table_users . " WHERE id = ?");
-		$query->execute(array($uid));
-		$row = $query->fetch(\PDO::FETCH_ASSOC);
+	private function _isUserActivated($uid) {
+		$row = $this->_dbh->from('users')->select(null)->select('isactive')->where('id', $uid)->execute()->fetch(Pdo::FETCH_ASSOC);
 
 		if (!$row || $row['isactive'] == 0) {
 			return false;
 		}
 
 		return true;
-	}*/
+	}
 
 	/**
 	* Recreates activation email for a given email and sends
