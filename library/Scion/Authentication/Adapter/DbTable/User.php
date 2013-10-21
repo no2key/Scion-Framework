@@ -21,7 +21,7 @@ class User {
 	 * @return array|bool
 	 */
 	public function getUserData($username) {
-		$data = $this->_dbh->from('users')->select(null)->select('id, password, email, salt, lang, isactive, reg_date')->where('username = ?', $username)->execute()->fetch(Pdo::FETCH_ASSOC);
+		$data = $this->_dbh->from('users')->select(null)->select('id, password, email, salt, lang, isactive, joined')->where('username = ?', $username)->execute()->fetch(Pdo::FETCH_ASSOC);
 
 		if ($data) {
 			$data['username'] = $username;
@@ -95,7 +95,7 @@ class User {
 
 		$lang = 'en';
 
-		$this->_dbh->insertInto('users', ['username' => $username, 'password' => $password, 'email' => $email, 'salt' => $salt, 'lang' => $lang, 'reg_date' => (new DateTime())->now(DateTime::MYSQL_DATETIME)])->execute();
+		$this->_dbh->insertInto('users', ['username' => $username, 'password' => $password, 'email' => $email, 'salt' => $salt, 'lang' => $lang, 'joined' => (new DateTime())->now(DateTime::MYSQL_DATETIME)])->execute();
 		$user = $this->getUserData($username);
 
 		$this->_activation->add($user['id'], $email);
