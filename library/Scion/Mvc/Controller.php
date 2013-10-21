@@ -2,7 +2,9 @@
 namespace Scion\Mvc;
 
 use Scion\Form\Form;
+use Scion\Http\Request;
 use Scion\Loader\RouteLoader;
+use Scion\Mvc\Controller\Plugin\Redirect;
 use Scion\Views\TemplateEngine;
 
 trait Controller {
@@ -37,5 +39,22 @@ trait Controller {
 	 */
 	final public function createFormBuilder($name = null) {
 		return new Form($name);
+	}
+
+	/**
+	 * Get Redirect object
+	 * @return Redirect
+	 */
+	final public function redirect() {
+		return new Redirect();
+	}
+
+	/**
+	 * Get Request object
+	 * @return Request
+	 */
+	public function getRequest() {
+		return new Request();
+
 	}
 }

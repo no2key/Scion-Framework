@@ -26,7 +26,8 @@ trait Singleton {
 				$reflectionClass = new \ReflectionClass(__CLASS__);
 				$reflectionMethod = new \ReflectionMethod(__CLASS__, '__construct');
 				$reflectionMethod->setAccessible(true);
-				$reflectionMethod->invokeArgs($reflectionClass->newInstanceWithoutConstructor(), func_get_args());
+				self::$instance = $reflectionClass->newInstanceWithoutConstructor();
+				$reflectionMethod->invokeArgs(self::$instance, func_get_args());
 			}
 			else {
 				self::$instance = new self();

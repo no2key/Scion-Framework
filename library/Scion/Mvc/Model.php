@@ -2,12 +2,13 @@
 namespace Scion\Mvc;
 
 use Scion\Authentication\Auth;
+use Scion\Authentication\AuthenticationService;
 use Scion\Db\Database;
 
 trait Model {
 
 	/**
-	 * Get Database object
+	 * Get SQL provider (mysql, sqlite, ...) object
 	 * @param string $instance
 	 * @return \Scion\Db\Sql
 	 */
@@ -15,11 +16,16 @@ trait Model {
 		return Database::initSql($instance);
 	}
 
+	/**
+	 * Get NoSQL object
+	 * @param string $instance
+	 * @return \Scion\Db\NoSql
+	 */
 	final public function getNoSql($instance = 'default') {
 		return Database::initNoSql($instance);
 	}
 
-	final public function getAuth($providerObj) {
-		return Auth::getInstance($providerObj);
+	final public function getAuth() {
+		return AuthenticationService::getInstance();
 	}
 }
