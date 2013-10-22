@@ -1,5 +1,5 @@
 <?php
-namespace Scion\Date;
+namespace Scion\Stdlib;
 
 class DateTime extends \DateTime {
 
