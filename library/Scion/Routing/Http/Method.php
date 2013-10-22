@@ -17,6 +17,10 @@ class Method {
 		$this->_requestMethod = (new Request())->getMethod();
 	}
 
+	/**
+	 * toString, get the method used to the route
+	 * @return mixed
+	 */
 	public function __toString() {
 		return $this->_method;
 	}

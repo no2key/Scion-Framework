@@ -11,6 +11,9 @@ class Router {
 
 	public static $DEBUG = 0;
 
+	/**
+	 * Router constructor, create a Request object
+	 */
 	public function __construct() {
 		$this->_request = new Request();
 	}
@@ -26,7 +29,7 @@ class Router {
 
 	/**
 	 * Add routes to router
-	 * @param array $newRoutes array if icRoutes
+	 * @param array $newRoutes array if Routes
 	 */
 	public function addRoutes(array $newRoutes) {
 		foreach ($newRoutes as &$nr) {
@@ -110,6 +113,7 @@ class Router {
 
 	/**
 	 * Check if there is matched route object
+	 * @return bool
 	 */
 	public function gotMatchedRoute() {
 		return $this->matchedRoute instanceof Route;
@@ -124,26 +128,46 @@ class Router {
 		return $this->matchedRoute->getMatchedParameters($withoutDefaults);
 	}
 
+	/**
+	 * Set a new route param
+	 * @param $name
+	 * @param $value
+	 * @return mixed
+	 */
 	public function setParam($name, $value) {
 		return $this->matchedRoute->setMatchedParam($name, $value);
 	}
 
+	/**
+	 * Return a matched param
+	 * @param $name
+	 * @return mixed
+	 */
 	public function getParam($name) {
 		return $this->matchedRoute->getMatchedParam($name);
 	}
 
+	/**
+	 * Remove a matched param
+	 * @param $name
+	 * @return mixed
+	 */
 	public function removeParam($name) {
 		return $this->matchedRoute->removeMatchedParam($name);
 	}
 
 	/**
 	 * Returns matched route
-	 * @return icRoute or null
+	 * @return Route or null
 	 */
 	public function getMatchedRoute() {
 		return $this->matchedRoute;
 	}
 
+	/**
+	 * Return hashed route
+	 * @return array
+	 */
 	public function getHashedRoutes() {
 		return $this->hashedRoutes;
 	}

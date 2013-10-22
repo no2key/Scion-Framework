@@ -41,7 +41,7 @@ class Controller {
 
 		// Check controller class use specific Trait
 		if (!in_array('Scion\Mvc\Controller', $controllerClass->getTraitNames())) {
-			throw new \Exception('A controller must use the next valid Trait: "Scion\Controllers\Controller"');
+			throw new \Exception('A controller must use the next valid Trait: "Scion\Mvc\Controller"');
 		}
 
 		// Create instance of the controller

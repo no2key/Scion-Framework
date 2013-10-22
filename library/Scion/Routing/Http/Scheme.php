@@ -18,6 +18,10 @@ class Scheme {
 		$this->_isSecure = (isset($_SERVER['HTTPS']) && (strtolower($_SERVER['HTTPS']) == 'on' || $_SERVER['HTTPS'] == 1)) || (isset($_SERVER['HTTP_SSL_HTTPS']) && (strtolower($_SERVER['HTTP_SSL_HTTPS']) == 'on' || $_SERVER['HTTP_SSL_HTTPS'] == 1)) || (isset($_SERVER['HTTP_X_FORWARDED_PROTO']) && strtolower($_SERVER['HTTP_X_FORWARDED_PROTO']) == 'https');
 	}
 
+	/**
+	 * toString, return the sheme of the current route
+	 * @return mixed
+	 */
 	public function __toString() {
 		return $this->_scheme;
 	}

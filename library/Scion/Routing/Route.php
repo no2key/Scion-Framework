@@ -148,6 +148,7 @@ class Route {
 	}
 
 	/**
+	 * Parse any value
 	 * @param $value
 	 */
 	protected function parseAny($value) {
@@ -271,18 +272,37 @@ class Route {
 		return $tMatArray;
 	}
 
+	/**
+	 * Return matched param for the specific name
+	 * @param $name
+	 * @return null
+	 */
 	public function getMatchedParam($name) {
 		return array_key_exists($name, $this->_matchedParameters) ? $this->_matchedParameters[$name] : null;
 	}
 
+	/**
+	 * Set a matched param
+	 * @param $name
+	 * @param $value
+	 * @return void
+	 */
 	public function setMatchedParam($name, $value) {
 		$this->_matchedParameters[$name] = $value;
 	}
 
+	/**
+	 * Remove a specific matched param in the array
+	 * @param $name
+	 */
 	public function removeMatchedParam($name) {
 		unset($this->_matchedParameters[$name]);
 	}
 
+	/**
+	 *  Get the name of the current route
+	 * @return string
+	 */
 	public function getName() {
 		return $this->_name;
 	}

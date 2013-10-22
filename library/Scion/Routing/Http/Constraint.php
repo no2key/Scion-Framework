@@ -51,6 +51,10 @@ class Constraint {
 		}
 	}
 
+	/**
+	 * Get constraint type and additional parameters
+	 * @return string
+	 */
 	public function __toString() {
 		if (is_array($this->_additional)) {
 			return (string)$this->_type . '::'.$this->_additional[0];
@@ -108,6 +112,7 @@ class Constraint {
 			case self::ANY:
 				return $value;
 		}
+		return null;
 	}
 
 	/**
@@ -137,5 +142,7 @@ class Constraint {
 			case self::ANY:
 				return '[^\/]+';
 		}
+		return null;
 	}
+
 }
