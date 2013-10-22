@@ -312,7 +312,7 @@ class Route {
 	 * if this->parameters is not specified
 	 */
 	private function extractParameters() {
-		if (is_array($this->_constraints)) {
+		if (!empty($this->_constraints)) {
 			return;
 		}
 		preg_match_all('/\:([A-Za-z0-9_]+)/', $this->_createPattern, $matches);
