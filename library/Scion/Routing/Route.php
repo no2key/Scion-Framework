@@ -190,7 +190,7 @@ class Route {
 
 		//this is code from symfony its better to check missing parameters immediately
 		if (($diff = array_diff_key($this->_constraints, $mgParams))) {
-			throw new \Exception(sprintf("Route with name %s, pattern %s has missing parameters (%s)", $this->_name, $this->_createPattern, implode(', ', array_keys($diff))));
+			throw new \Exception(sprintf("Route with name %s, pattern %s has missing parameters (<strong>%s</strong>)", $this->_name, $this->_createPattern, implode(', ', array_keys($diff))));
 		}
 
 		//
@@ -202,14 +202,20 @@ class Route {
 		//!IMPORTANT: order of parameters match order of parameters in $createPattern
 		foreach ($this->_constraints as $key => $constraintObject) {
 			//throw exception if key is not in params
-			//if ( !array_key_exists($key, $mgParams) ) throw new icException("$key is not specified for route $this->_name");
+			if (! array_key_exists($key, $mgParams)) {
+				throw new \Exception($key . ' is not specified for route ' . $this->_name);
+			}
 			$value = $mgParams[$key];
 
 			// if parameter is last one and exactly the same value as value in defaultMatchedParameters
 			// than just clear this parameter from generated url
-			if (/*empty($this->_defaultMatchedParameters) || */!property_exists($this->_defaultMatchedParameters, $key) || $this->_defaultMatchedParameters->$key != $value) {
+			/**
+			 * @todo Bug need to be fixed here, if defaults value specified, no value replaced (commented code by #)
+			 */
+			//if ( !isset($this->defaultMatchedParameters[$key])  ||  $this->defaultMatchedParameters[$key] != $value )
+			#if (!property_exists($this->_defaultMatchedParameters, $key) || $this->_defaultMatchedParameters->$key != $value) {
 				//if there is route parameter object for this parameter, parse its value with routeParameterObject otherwise just do urlencode
-				if (!$hasDefaults) {
+				if ($hasDefaults == false) {
 					$url = str_replace(':' . $key, !($constraintObject instanceof Constraint) ? urlencode($value) : $constraintObject->$value, $url);
 				}
 				else {
@@ -220,12 +226,12 @@ class Route {
 					$replaces    = [];
 					$hasDefaults = false;
 				}
-			}
-			else {
-				$tokens[]    = ':' . $key;
-				$replaces[]  = $value;
-				$hasDefaults = true;
-			}
+			#}
+			#else {
+			#	$tokens[]    = ':' . $key;
+			#	$replaces[]  = $value;
+			#	$hasDefaults = true;
+			#}
 		}
 
 		//add additional at the end if route allows them
@@ -237,7 +243,7 @@ class Route {
 		}
 
 		//fix last parameter
-		if ($hasDefaults) {
+		if ($hasDefaults == true) {
 			if (!$this->_allowAdditionalParameters || !count($params)) {
 				//substring to position of first default parameter
 				$url = substr($url, 0, strpos($url, $tokens[0]));
@@ -312,15 +318,14 @@ class Route {
 	 * if this->parameters is not specified
 	 */
 	private function extractParameters() {
-		if (!empty($this->_constraints)) {
-			return;
+		if (empty($this->_constraints)) {
+			preg_match_all('/\:([A-Za-z0-9_]+)/', $this->_createPattern, $matches);
+			$this->_constraints = array_flip($matches[1]);
 		}
-		preg_match_all('/\:([A-Za-z0-9_]+)/', $this->_createPattern, $matches);
-		$this->_constraints = array_flip($matches[1]);
 	}
 
 	/**
-	 * Extract unmutable base from $this->_createPattern
+	 * Extract immutable base from $this->_createPattern
 	 */
 	private function extractBase() {
 		$pos        = strpos($this->_createPattern, ':');
