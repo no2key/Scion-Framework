@@ -1,13 +1,8 @@
 <?php
 namespace Scion\Authentication\Adapter\HybridAuth;
-	/*!
-	* HybridAuth
-	* http://hybridauth.sourceforge.net | http://github.com/hybridauth/hybridauth
-	* (c) 2009-2012, HybridAuth authors | http://hybridauth.sourceforge.net/licenses.html
-	*/
 
 /**
- * Hybrid_User_Contact
+ * UserContact
  *
  * used to provider the connected user contacts list on a standardized structure across supported social apis.
  *

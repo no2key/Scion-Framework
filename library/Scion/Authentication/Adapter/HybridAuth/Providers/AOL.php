@@ -1,14 +1,10 @@
 <?php
 namespace Scion\Authentication\Adapter\HybridAuth\Providers;
-	/*!
-	* HybridAuth
-	* http://hybridauth.sourceforge.net | http://github.com/hybridauth/hybridauth
-	* (c) 2009-2012, HybridAuth authors | http://hybridauth.sourceforge.net/licenses.html
-	*/
+
 use Scion\Authentication\Adapter\HybridAuth\ProviderModelOpenID;
 
 /**
- * Hybrid_Providers_AOL provider adapter based on OpenID protocol
+ * AOL provider adapter based on OpenID protocol
  *
  * http://hybridauth.sourceforge.net/userguide/IDProvider_info_AOL.html
  */

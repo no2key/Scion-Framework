@@ -3,6 +3,8 @@ namespace Scion\Authentication\Adapter\HybridAuth\thirdparty\OAuth;
 
 	// A service client for the OAuth 2 flow.
 // v0.1
+use Scion\Authentication\Adapter\HybridAuth\Logger;
+
 class OAuth2Client {
 	public $api_base_url = "";
 	public $authorize_url = "";
@@ -67,7 +69,7 @@ class OAuth2Client {
 		$response = $this->parseRequestResult($response);
 
 		if (!$response || !isset($response->access_token)) {
-			throw new Exception("The Authorization Service has return: " . $response->error);
+			throw new \Exception("The Authorization Service has return: " . $response->error);
 		}
 
 		if (isset($response->access_token)) {
@@ -100,7 +102,7 @@ class OAuth2Client {
 
 					// if wrong response
 					if (!isset($response->access_token) || !$response->access_token) {
-						throw new Exception("The Authorization Service has return an invalid response while requesting a new access token. given up!");
+						throw new \Exception("The Authorization Service has return an invalid response while requesting a new access token. given up!");
 					}
 
 					// set new access_token
@@ -181,8 +183,8 @@ class OAuth2Client {
 	// -- utilities
 
 	private function request($url, $params = false, $type = "GET") {
-		Hybrid_Logger::info("Enter OAuth2Client::request( $url )");
-		Hybrid_Logger::debug("OAuth2Client::request(). dump request params: ", serialize($params));
+		Logger::info("Enter OAuth2Client::request( $url )");
+		Logger::debug("OAuth2Client::request(). dump request params: ", serialize($params));
 
 		if ($type == "GET") {
 			$url = $url . (strpos($url, '?') ? '&' : '?') . http_build_query($params);
@@ -211,8 +213,8 @@ class OAuth2Client {
 		}
 
 		$response = curl_exec($ch);
-		Hybrid_Logger::debug("OAuth2Client::request(). dump request info: ", serialize(curl_getinfo($ch)));
-		Hybrid_Logger::debug("OAuth2Client::request(). dump request result: ", serialize($response));
+		Logger::debug("OAuth2Client::request(). dump request info: ", serialize(curl_getinfo($ch)));
+		Logger::debug("OAuth2Client::request(). dump request result: ", serialize($response));
 
 		$this->http_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
 		$this->http_info = array_merge($this->http_info, curl_getinfo($ch));

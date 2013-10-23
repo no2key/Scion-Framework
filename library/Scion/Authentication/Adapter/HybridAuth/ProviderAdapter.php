@@ -5,6 +5,7 @@ namespace Scion\Authentication\Adapter\HybridAuth;
 	* http://hybridauth.sourceforge.net | http://github.com/hybridauth/hybridauth
 	* (c) 2009-2012, HybridAuth authors | http://hybridauth.sourceforge.net/licenses.html
 	*/
+use Scion\Loader\RouteLoader;
 
 /**
  * ProviderAdapter is the basic class which Auth will use
@@ -48,31 +49,31 @@ class ProviderAdapter {
 
 		# check the IDp id
 		if (! $this->id) {
-			throw new Exception("No provider ID specified.", 2);
+			throw new \Exception("No provider ID specified.", 2);
 		}
 
 		# check the IDp config
 		if (! $this->config) {
-			throw new Exception("Unknown Provider ID, check your configuration file.", 3);
+			throw new \Exception("Unknown Provider ID, check your configuration file.", 3);
 		}
 
 		# check the IDp adapter is enabled
 		if (! $this->config["enabled"]) {
-			throw new Exception("The provider '{$this->id}' is not enabled.", 3);
+			throw new \Exception("The provider '{$this->id}' is not enabled.", 3);
 		}
 
 		# include the adapter wrapper
 		if (isset($this->config["wrapper"]) && is_array($this->config["wrapper"])) {
-			require_once $this->config["wrapper"]["path"];
+			//require_once $this->config["wrapper"]["path"];
 
 			if (! class_exists($this->config["wrapper"]["class"])) {
-				throw new Exception("Unable to load the adapter class.", 3);
+				throw new \Exception("Unable to load the adapter class.", 3);
 			}
 
 			$this->wrapper = $this->config["wrapper"]["class"];
 		}
 		else {
-			require_once Auth::$config["path_providers"] . $this->id . ".php";
+			//require_once Auth::$config["path_providers"] . $this->id . ".php";
 
 			$this->wrapper = __NAMESPACE__ . '\Providers\\' . $this->id;
 		}
@@ -93,7 +94,7 @@ class ProviderAdapter {
 		Logger::info("Enter ProviderAdapter::login( {$this->id} ) ");
 
 		if (! $this->adapter) {
-			throw new Exception("ProviderAdapter::login() should not directly used.");
+			throw new \Exception("ProviderAdapter::login() should not directly used.");
 		}
 
 		// clear all unneeded params
@@ -119,7 +120,8 @@ class ProviderAdapter {
 		# for default HybridAuth endpoint url hauth_login_start_url
 		# 	auth.start  required  the IDp ID
 		# 	auth.time   optional  login request timestamp
-		$this->params["login_start"] = $HYBRID_AUTH_URL_BASE . (strpos($HYBRID_AUTH_URL_BASE, '?') ? '&' : '?') . "hauth.start={$this->id}&hauth.time={$this->params["hauth_time"]}";
+		//$this->params["login_start"] = $HYBRID_AUTH_URL_BASE . (strpos($HYBRID_AUTH_URL_BASE, '?') ? '&' : '?') . "hauth.start={$this->id}&hauth.time={$this->params["hauth_time"]}";
+		$this->params['login_start'] = RouteLoader::getRouter()->generate(Auth::$config['routes']['start'], ['id' => $this->id, 'time' => $this->params['hauth_time']]);
 
 		# for default HybridAuth endpoint url hauth_login_done_url
 		# 	auth.done   required  the IDp ID
@@ -169,11 +171,11 @@ class ProviderAdapter {
 		Logger::info("Enter ProviderAdapter::$name(), Provider: {$this->id}");
 
 		if (! $this->isUserConnected()) {
-			throw new Exception("User not connected to the provider {$this->id}.", 7);
+			throw new \Exception("User not connected to the provider {$this->id}.", 7);
 		}
 
 		if (! method_exists($this->adapter, $name)) {
-			throw new Exception("Call to undefined function Providers_{$this->id}::$name().");
+			throw new \Exception("Call to undefined function Providers_{$this->id}::$name().");
 		}
 
 		if (count($arguments)) {
@@ -194,7 +196,7 @@ class ProviderAdapter {
 		if (! $this->adapter->isUserConnected()) {
 			Logger::error("User not connected to the provider.");
 
-			throw new Exception("User not connected to the provider.", 7);
+			throw new \Exception("User not connected to the provider.", 7);
 		}
 
 		return
@@ -216,7 +218,7 @@ class ProviderAdapter {
 		if (! $this->adapter->isUserConnected()) {
 			Logger::error("User not connected to the provider.");
 
-			throw new Exception("User not connected to the provider.", 7);
+			throw new \Exception("User not connected to the provider.", 7);
 		}
 
 		return $this->adapter->api;

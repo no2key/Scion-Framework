@@ -59,9 +59,6 @@ class ProviderModelOAuth2 extends ProviderModel {
 			$this->scope = $this->config["scope"];
 		}
 
-		// include OAuth2 client
-		require_once Auth::$config["path_libraries"] . "OAuth/OAuth2Client.php";
-
 		// create a new OAuth2 client instance
 		$this->api = new OAuth2Client($this->config["keys"]["id"], $this->config["keys"]["secret"], $this->endpoint);
 

@@ -1,14 +1,13 @@
 <?php
 namespace Scion\Authentication\Adapter\HybridAuth\Providers;
-/*!
-* HybridAuth
-* http://hybridauth.sourceforge.net | http://github.com/hybridauth/hybridauth
-* (c) 2009-2012, HybridAuth authors | http://hybridauth.sourceforge.net/licenses.html 
-*/
+
+use Scion\Authentication\Adapter\HybridAuth\Auth;
 use Scion\Authentication\Adapter\HybridAuth\ProviderModelOAuth1;
+use Scion\Authentication\Adapter\HybridAuth\UserActivity;
+use Scion\Authentication\Adapter\HybridAuth\UserContact;
 
 /**
- * Hybrid_Providers_Twitter provider adapter based on OAuth1 protocol
+ * Twitter provider adapter based on OAuth1 protocol
  */
 class Twitter extends ProviderModelOAuth1 {
 	/**
@@ -45,11 +44,11 @@ class Twitter extends ProviderModelOAuth1 {
 
 		// check the last HTTP status code returned
 		if ($this->api->http_code != 200) {
-			throw new Exception("Authentification failed! {$this->providerId} returned an error. " . $this->errorMessageByStatus($this->api->http_code), 5);
+			throw new \Exception("Authentification failed! {$this->providerId} returned an error. " . $this->errorMessageByStatus($this->api->http_code), 5);
 		}
 
 		if (!isset($tokens["oauth_token"])) {
-			throw new Exception("Authentification failed! {$this->providerId} returned an invalid oauth token.", 5);
+			throw new \Exception("Authentification failed! {$this->providerId} returned an invalid oauth token.", 5);
 		}
 
 		$this->token("request_token", $tokens["oauth_token"]);
@@ -57,11 +56,11 @@ class Twitter extends ProviderModelOAuth1 {
 
 		// redirect the user to the provider authentication url with force_login
 		if (isset($this->config['force_login']) && $this->config['force_login']) {
-			Hybrid_Auth::redirect($this->api->authorizeUrl($tokens, array('force_login' => true)));
+			Auth::redirect($this->api->authorizeUrl($tokens, array('force_login' => true)));
 		}
 
 		// else, redirect the user to the provider authentication url
-		Hybrid_Auth::redirect($this->api->authorizeUrl($tokens));
+		Auth::redirect($this->api->authorizeUrl($tokens));
 	}
 
 	/**
@@ -72,11 +71,11 @@ class Twitter extends ProviderModelOAuth1 {
 
 		// check the last HTTP status code returned
 		if ($this->api->http_code != 200) {
-			throw new Exception("User profile request failed! {$this->providerId} returned an error. " . $this->errorMessageByStatus($this->api->http_code), 6);
+			throw new \Exception("User profile request failed! {$this->providerId} returned an error. " . $this->errorMessageByStatus($this->api->http_code), 6);
 		}
 
 		if (!is_object($response) || !isset($response->id)) {
-			throw new Exception("User profile request failed! {$this->providerId} api returned an invalid response.", 6);
+			throw new \Exception("User profile request failed! {$this->providerId} api returned an invalid response.", 6);
 		}
 
 		# store the user profile.  
@@ -101,7 +100,7 @@ class Twitter extends ProviderModelOAuth1 {
 
 		// check the last HTTP status code returned
 		if ($this->api->http_code != 200) {
-			throw new Exception("User contacts request failed! {$this->providerId} returned an error. " . $this->errorMessageByStatus($this->api->http_code));
+			throw new \Exception("User contacts request failed! {$this->providerId} returned an error. " . $this->errorMessageByStatus($this->api->http_code));
 		}
 
 		if (!$response || !count($response->ids)) {
@@ -119,12 +118,12 @@ class Twitter extends ProviderModelOAuth1 {
 
 			// check the last HTTP status code returned
 			if ($this->api->http_code != 200) {
-				throw new Exception("User contacts request failed! {$this->providerId} returned an error. " . $this->errorMessageByStatus($this->api->http_code));
+				throw new \Exception("User contacts request failed! {$this->providerId} returned an error. " . $this->errorMessageByStatus($this->api->http_code));
 			}
 
 			if ($response && count($response)) {
 				foreach ($response as $item) {
-					$uc = new Hybrid_User_Contact();
+					$uc = new UserContact();
 
 					$uc->identifier  = (property_exists($item, 'id')) ? $item->id : "";
 					$uc->displayName = (property_exists($item, 'name')) ? $item->name : "";
@@ -149,7 +148,7 @@ class Twitter extends ProviderModelOAuth1 {
 
 		// check the last HTTP status code returned
 		if ($this->api->http_code != 200) {
-			throw new Exception("Update user status failed! {$this->providerId} returned an error. " . $this->errorMessageByStatus($this->api->http_code));
+			throw new \Exception("Update user status failed! {$this->providerId} returned an error. " . $this->errorMessageByStatus($this->api->http_code));
 		}
 	}
 
@@ -170,7 +169,7 @@ class Twitter extends ProviderModelOAuth1 {
 
 		// check the last HTTP status code returned
 		if ($this->api->http_code != 200) {
-			throw new Exception("User activity stream request failed! {$this->providerId} returned an error. " . $this->errorMessageByStatus($this->api->http_code));
+			throw new \Exception("User activity stream request failed! {$this->providerId} returned an error. " . $this->errorMessageByStatus($this->api->http_code));
 		}
 
 		if (!$response) {
@@ -180,7 +179,7 @@ class Twitter extends ProviderModelOAuth1 {
 		$activities = ARRAY();
 
 		foreach ($response as $item) {
-			$ua = new Hybrid_User_Activity();
+			$ua = new UserActivity();
 
 			$ua->id   = (property_exists($item, 'id')) ? $item->id : "";
 			$ua->date = (property_exists($item, 'created_at')) ? strtotime($item->created_at) : "";

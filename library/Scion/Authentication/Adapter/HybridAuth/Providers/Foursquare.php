@@ -1,14 +1,10 @@
 <?php
 namespace Scion\Authentication\Adapter\HybridAuth\Providers;
-/*!
-* HybridAuth
-* http://hybridauth.sourceforge.net | http://github.com/hybridauth/hybridauth
-* (c) 2009-2012, HybridAuth authors | http://hybridauth.sourceforge.net/licenses.html 
-*/
+
 use Scion\Authentication\Adapter\HybridAuth\ProviderModelOAuth2;
 
 /**
- * Hybrid_Providers_Foursquare provider adapter based on OAuth2 protocol
+ * Foursquare provider adapter based on OAuth2 protocol
  *
  * http://hybridauth.sourceforge.net/userguide/IDProvider_info_Foursquare.html
  */
@@ -34,7 +30,7 @@ class Foursquare extends ProviderModelOAuth2 {
 		$data = $this->api->api("users/self");
 
 		if (!isset($data->response->user->id)) {
-			throw new Exception("User profile request failed! {$this->providerId} returned an invalid response.", 6);
+			throw new \Exception("User profile request failed! {$this->providerId} returned an invalid response.", 6);
 		}
 
 		$data = $data->response->user;

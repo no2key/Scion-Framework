@@ -3,6 +3,8 @@ namespace Scion\Authentication\Adapter\HybridAuth\thirdparty\OAuth;
 
 // A service client for the OAuth 1/1.0a flow.
 // v0.1
+use Scion\Authentication\Adapter\HybridAuth\Logger;
+
 class OAuth1Client {
 	public $api_base_url = "";
 	public $authorize_url = "";
@@ -32,7 +34,7 @@ class OAuth1Client {
 	 * OAuth client constructor
 	 */
 	function __construct($consumer_key, $consumer_secret, $oauth_token = null, $oauth_token_secret = null) {
-		$this->sha1_method = new OAuthSignatureMethod_HMAC_SHA1();
+		$this->sha1_method = new OAuthSignatureMethodHMACSHA1();
 		$this->consumer    = new OAuthConsumer($consumer_key, $consumer_secret);
 		$this->token       = null;
 
@@ -150,8 +152,8 @@ class OAuth1Client {
 	 * Make http request
 	 */
 	function request($url, $method, $postfields = null, $auth_header = null) {
-		Hybrid_Logger::info("Enter OAuth1Client::request( $method, $url )");
-		Hybrid_Logger::debug("OAuth1Client::request(). dump post fields: ", serialize($postfields));
+		Logger::info("Enter OAuth1Client::request( $method, $url )");
+		Logger::debug("OAuth1Client::request(). dump post fields: ", serialize($postfields));
 
 		$this->http_info = array();
 		$ci              = curl_init();
@@ -192,8 +194,8 @@ class OAuth1Client {
 		curl_setopt($ci, CURLOPT_URL, $url);
 		$response = curl_exec($ci);
 
-		Hybrid_Logger::debug("OAuth1Client::request(). dump request info: ", serialize(curl_getinfo($ci)));
-		Hybrid_Logger::debug("OAuth1Client::request(). dump request result: ", serialize($response));
+		Logger::debug("OAuth1Client::request(). dump request info: ", serialize(curl_getinfo($ci)));
+		Logger::debug("OAuth1Client::request(). dump request result: ", serialize($response));
 
 		$this->http_code = curl_getinfo($ci, CURLINFO_HTTP_CODE);
 		$this->http_info = array_merge($this->http_info, curl_getinfo($ci));

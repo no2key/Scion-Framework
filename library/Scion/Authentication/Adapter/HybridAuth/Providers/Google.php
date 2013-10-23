@@ -1,16 +1,12 @@
 <?php
 namespace Scion\Authentication\Adapter\HybridAuth\Providers;
-/*!
-* HybridAuth
-* http://hybridauth.sourceforge.net | http://github.com/hybridauth/hybridauth
-* (c) 2009-2012, HybridAuth authors | http://hybridauth.sourceforge.net/licenses.html 
-*/
+
 use Scion\Authentication\Adapter\HybridAuth\Auth;
 use Scion\Authentication\Adapter\HybridAuth\ProviderModelOAuth2;
 use Scion\Authentication\Adapter\HybridAuth\UserContact;
 
 /**
- * Hybrid_Providers_Google provider adapter based on OAuth2 protocol
+ * Google provider adapter based on OAuth2 protocol
  *
  * http://hybridauth.sourceforge.net/userguide/IDProvider_info_Google.html
  */
@@ -57,7 +53,7 @@ class Google extends ProviderModelOAuth2 {
 		$response = $this->api->api("https://www.googleapis.com/oauth2/v1/userinfo");
 
 		if (!isset($response->id) || isset($response->error)) {
-			throw new Exception("User profile request failed! {$this->providerId} returned an invalid response.", 6);
+			throw new \Exception("User profile request failed! {$this->providerId} returned an invalid response.", 6);
 		}
 
 		$this->user->profile->identifier    = (property_exists($response, 'id')) ? $response->id : "";

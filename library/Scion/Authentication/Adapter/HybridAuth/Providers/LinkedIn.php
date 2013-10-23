@@ -5,12 +5,16 @@ namespace Scion\Authentication\Adapter\HybridAuth\Providers;
 * http://hybridauth.sourceforge.net | http://github.com/hybridauth/hybridauth
 * (c) 2009-2012, HybridAuth authors | http://hybridauth.sourceforge.net/licenses.html
 */
+use Scion\Authentication\Adapter\HybridAuth\Auth;
 use Scion\Authentication\Adapter\HybridAuth\ProviderModel;
+use Scion\Authentication\Adapter\HybridAuth\thirdparty\LinkedIn\LinkedInException;
+use Scion\Authentication\Adapter\HybridAuth\UserActivity;
+use Scion\Authentication\Adapter\HybridAuth\UserContact;
 
 /**
- * Hybrid_Providers_LinkedIn provider adapter based on OAuth1 protocol
+ * LinkedIn provider adapter based on OAuth1 protocol
  *
- * Hybrid_Providers_LinkedIn use linkedinPHP library created by fiftyMission Inc.
+ * LinkedIn use linkedinPHP library created by fiftyMission Inc.
  *
  * http://hybridauth.sourceforge.net/userguide/IDProvider_info_LinkedIn.html
  */
@@ -20,13 +24,10 @@ class LinkedIn extends ProviderModel {
 	 */
 	function initialize() {
 		if (!$this->config["keys"]["key"] || !$this->config["keys"]["secret"]) {
-			throw new Exception("Your application key and secret are required in order to connect to {$this->providerId}.", 4);
+			throw new \Exception("Your application key and secret are required in order to connect to {$this->providerId}.", 4);
 		}
 
-		require_once Hybrid_Auth::$config["path_libraries"] . "OAuth/OAuth.php";
-		require_once Hybrid_Auth::$config["path_libraries"] . "LinkedIn/LinkedIn.php";
-
-		$this->api = new LinkedIn(array('appKey'    => $this->config["keys"]["key"],
+		$this->api = new \Scion\Authentication\Adapter\HybridAuth\thirdparty\LinkedIn\LinkedIn(array('appKey'    => $this->config["keys"]["key"],
 										'appSecret' => $this->config["keys"]["secret"], 'callbackUrl' => $this->endpoint
 								  ));
 
@@ -47,10 +48,10 @@ class LinkedIn extends ProviderModel {
 			$this->token("oauth_token_secret", $response['linkedin']['oauth_token_secret']);
 
 			# redirect user to LinkedIn authorisation web page
-			Hybrid_Auth::redirect(LINKEDIN::_URL_AUTH . $response['linkedin']['oauth_token']);
+			Auth::redirect(LINKEDIN::_URL_AUTH . $response['linkedin']['oauth_token']);
 		}
 		else {
-			throw new Exception("Authentication failed! {$this->providerId} returned an invalid Token.", 5);
+			throw new \Exception("Authentication failed! {$this->providerId} returned an invalid Token.", 5);
 		}
 	}
 
@@ -62,7 +63,7 @@ class LinkedIn extends ProviderModel {
 		$oauth_verifier = $_REQUEST['oauth_verifier'];
 
 		if (!$oauth_verifier) {
-			throw new Exception("Authentication failed! {$this->providerId} returned an invalid Token.", 5);
+			throw new \Exception("Authentication failed! {$this->providerId} returned an invalid Token.", 5);
 		}
 
 		$response = $this->api->retrieveTokenAccess($oauth_token, $this->token("oauth_token_secret"), $oauth_verifier);
@@ -79,7 +80,7 @@ class LinkedIn extends ProviderModel {
 			$this->setUserConnected();
 		}
 		else {
-			throw new Exception("Authentication failed! {$this->providerId} returned an invalid Token.", 5);
+			throw new \Exception("Authentication failed! {$this->providerId} returned an invalid Token.", 5);
 		}
 	}
 
@@ -92,14 +93,14 @@ class LinkedIn extends ProviderModel {
 			$response = $this->api->profile('~:(id,first-name,last-name,public-profile-url,picture-url,email-address,date-of-birth,phone-numbers,summary)');
 		}
 		catch (LinkedInException $e) {
-			throw new Exception("User profile request failed! {$this->providerId} returned an error: $e", 6);
+			throw new \Exception("User profile request failed! {$this->providerId} returned an error: $e", 6);
 		}
 
 		if (isset($response['success']) && $response['success'] === true) {
-			$data = @ new SimpleXMLElement($response['linkedin']);
+			$data = @ new \SimpleXMLElement($response['linkedin']);
 
 			if (!is_object($data)) {
-				throw new Exception("User profile request failed! {$this->providerId} returned an invalid xml data.", 6);
+				throw new \Exception("User profile request failed! {$this->providerId} returned an invalid xml data.", 6);
 			}
 
 			$this->user->profile->identifier  = (string)$data->{'id'};
@@ -130,7 +131,7 @@ class LinkedIn extends ProviderModel {
 			return $this->user->profile;
 		}
 		else {
-			throw new Exception("User profile request failed! {$this->providerId} returned an invalid response.", 6);
+			throw new \Exception("User profile request failed! {$this->providerId} returned an invalid response.", 6);
 		}
 	}
 
@@ -142,19 +143,19 @@ class LinkedIn extends ProviderModel {
 			$response = $this->api->profile('~/connections:(id,first-name,last-name,picture-url,public-profile-url,summary)');
 		}
 		catch (LinkedInException $e) {
-			throw new Exception("User contacts request failed! {$this->providerId} returned an error: $e");
+			throw new \Exception("User contacts request failed! {$this->providerId} returned an error: $e");
 		}
 
 		if (!$response || !$response['success']) {
 			return ARRAY();
 		}
 
-		$connections = new SimpleXMLElement($response['linkedin']);
+		$connections = new \SimpleXMLElement($response['linkedin']);
 
 		$contacts = ARRAY();
 
 		foreach ($connections->person as $connection) {
-			$uc = new Hybrid_User_Contact();
+			$uc = new UserContact();
 
 			$uc->identifier  = (string)$connection->id;
 			$uc->displayName = (string)$connection->{'last-name'} . " " . $connection->{'first-name'};
@@ -196,11 +197,11 @@ class LinkedIn extends ProviderModel {
 			$response = $this->api->share('new', $parameters, $private);
 		}
 		catch (LinkedInException $e) {
-			throw new Exception("Update user status update failed!  {$this->providerId} returned an error: $e");
+			throw new \Exception("Update user status update failed!  {$this->providerId} returned an error: $e");
 		}
 
 		if (!$response || !$response['success']) {
-			throw new Exception("Update user status update failed! {$this->providerId} returned an error.");
+			throw new \Exception("Update user status update failed! {$this->providerId} returned an error.");
 		}
 	}
 
@@ -219,14 +220,14 @@ class LinkedIn extends ProviderModel {
 			}
 		}
 		catch (LinkedInException $e) {
-			throw new Exception("User activity stream request failed! {$this->providerId} returned an error: $e");
+			throw new \Exception("User activity stream request failed! {$this->providerId} returned an error: $e");
 		}
 
 		if (!$response || !$response['success']) {
 			return ARRAY();
 		}
 
-		$updates = new SimpleXMLElement($response['linkedin']);
+		$updates = new \SimpleXMLElement($response['linkedin']);
 
 		$activities = ARRAY();
 
@@ -234,7 +235,7 @@ class LinkedIn extends ProviderModel {
 			$person = $update->{'update-content'}->person;
 			$share  = $update->{'update-content'}->person->{'current-share'};
 
-			$ua = new Hybrid_User_Activity();
+			$ua = new UserActivity();
 
 			$ua->id   = (string)$update->id;
 			$ua->date = (string)$update->timestamp;

@@ -1,10 +1,5 @@
 <?php
 namespace Scion\Authentication\Adapter\HybridAuth\Providers;
-	/*!
-	* HybridAuth
-	* http://hybridauth.sourceforge.net | http://github.com/hybridauth/hybridauth
-	* (c) 2009-2012, HybridAuth authors | http://hybridauth.sourceforge.net/licenses.html
-	*/
 
 /**
  * Windows Live OAuth2 Class
@@ -15,9 +10,10 @@ namespace Scion\Authentication\Adapter\HybridAuth\Providers;
  * @license             BSD License
  */
 use Scion\Authentication\Adapter\HybridAuth\ProviderModelOAuth2;
+use Scion\Authentication\Adapter\HybridAuth\UserContact;
 
 /**
- * Hybrid_Providers_Live - Windows Live provider adapter based on OAuth2 protocol
+ * Live - Windows Live provider adapter based on OAuth2 protocol
  */
 class Live extends ProviderModelOAuth2 {
 	// default permissions 
@@ -44,7 +40,7 @@ class Live extends ProviderModelOAuth2 {
 		$data = $this->api->get("me");
 
 		if (!isset($data->id)) {
-			throw new Exception("User profile request failed! {$this->providerId} returned an invalide response.", 6);
+			throw new \Exception("User profile request failed! {$this->providerId} returned an invalide response.", 6);
 		}
 
 		$this->user->profile->identifier  = (property_exists($data, 'id')) ? $data->id : "";
@@ -77,7 +73,7 @@ class Live extends ProviderModelOAuth2 {
 		$response = $this->api->get('me/contacts');
 
 		if ($this->api->http_code != 200) {
-			throw new Exception('User contacts request failed! ' . $this->providerId . ' returned an error: ' . $this->errorMessageByStatus($this->api->http_code));
+			throw new \Exception('User contacts request failed! ' . $this->providerId . ' returned an error: ' . $this->errorMessageByStatus($this->api->http_code));
 		}
 
 		if (!$response->data && ($response->error != 0)) {
@@ -87,7 +83,7 @@ class Live extends ProviderModelOAuth2 {
 		$contacts = array();
 
 		foreach ($response->data as $item) {
-			$uc = new Hybrid_User_Contact();
+			$uc = new UserContact();
 
 			$uc->identifier  = (property_exists($item, 'id')) ? $item->id : "";
 			$uc->displayName = (property_exists($item, 'name')) ? $item->name : "";

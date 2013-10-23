@@ -1,13 +1,8 @@
 <?php
 namespace Scion\Authentication\Adapter\HybridAuth;
-	/*!
-	* HybridAuth
-	* http://hybridauth.sourceforge.net | http://github.com/hybridauth/hybridauth
-	* (c) 2009-2012, HybridAuth authors | http://hybridauth.sourceforge.net/licenses.html
-	*/
 
 /**
- * The Hybrid_User class represents the current loggedin user
+ * The User class represents the current loggedin user
  */
 class User {
 	/* The ID (name) of the connected provider */

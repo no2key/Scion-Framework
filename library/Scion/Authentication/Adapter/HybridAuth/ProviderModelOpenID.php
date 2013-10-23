@@ -5,15 +5,16 @@ namespace Scion\Authentication\Adapter\HybridAuth;
 	* http://hybridauth.sourceforge.net | http://github.com/hybridauth/hybridauth
 	* (c) 2009-2012, HybridAuth authors | http://hybridauth.sourceforge.net/licenses.html
 	*/
+use Scion\Authentication\Adapter\HybridAuth\thirdparty\OpenID\LightOpenID;
 
 /**
- * To implement an OpenID based service provider, Hybrid_Provider_Model_OpenID
+ * To implement an OpenID based service provider, ProviderModelOpenID
  * can be used to save the hassle of the authentication flow.
  *
- * Each class that inherit from Hybrid_Provider_Model_OAuth2 have only to define
+ * Each class that inherit from ProviderModelOAuth2 have only to define
  * the provider identifier : <code>public $openidIdentifier = ""; </code>
  *
- * Hybrid_Provider_Model_OpenID use LightOpenID lib which can be found on
+ * ProviderModelOpenID use LightOpenID lib which can be found on
  * Hybrid/thirdparty/OpenID/LightOpenID.php
  */
 class ProviderModelOpenID extends ProviderModel {
@@ -30,13 +31,10 @@ class ProviderModelOpenID extends ProviderModel {
 			$this->openidIdentifier = $this->params["openid_identifier"];
 		}
 
-		// include LightOpenID lib
-		require_once Hybrid_Auth::$config["path_libraries"] . "OpenID/LightOpenID.php";
-
 		// An error was occurring when proxy wasn't set. Not sure where proxy was meant to be set/initialized.
-		Hybrid_Auth::$config['proxy'] = isset(Hybrid_Auth::$config['proxy']) ? Hybrid_Auth::$config['proxy'] : '';
+		Auth::$config['proxy'] = isset(Auth::$config['proxy']) ? Auth::$config['proxy'] : '';
 
-		$this->api = new LightOpenID(parse_url(Hybrid_Auth::$config["base_url"], PHP_URL_HOST), Hybrid_Auth::$config["proxy"]);
+		$this->api = new LightOpenID(parse_url(Auth::$config["base_url"], PHP_URL_HOST), Auth::$config["proxy"]);
 	}
 
 	// --------------------------------------------------------------------
@@ -46,7 +44,7 @@ class ProviderModelOpenID extends ProviderModel {
 	 */
 	function loginBegin() {
 		if (empty($this->openidIdentifier)) {
-			throw new Exception("OpenID adapter require the identity provider identifier 'openid_identifier' as an extra parameter.", 4);
+			throw new \Exception("OpenID adapter require the identity provider identifier 'openid_identifier' as an extra parameter.", 4);
 		}
 
 		$this->api->identity  = $this->openidIdentifier;
@@ -65,7 +63,7 @@ class ProviderModelOpenID extends ProviderModel {
 		);
 
 		# redirect the user to the provider authentication url
-		Hybrid_Auth::redirect($this->api->authUrl());
+		Auth::redirect($this->api->authUrl());
 	}
 
 	// --------------------------------------------------------------------
@@ -76,12 +74,12 @@ class ProviderModelOpenID extends ProviderModel {
 	function loginFinish() {
 		# if user don't garant acess of their data to your site, halt with an Exception
 		if ($this->api->mode == 'cancel') {
-			throw new Exception("Authentication failed! User has canceled authentication!", 5);
+			throw new \Exception("Authentication failed! User has canceled authentication!", 5);
 		}
 
 		# if something goes wrong
 		if (!$this->api->validate()) {
-			throw new Exception("Authentication failed. Invalid request recived!", 5);
+			throw new \Exception("Authentication failed. Invalid request recived!", 5);
 		}
 
 		# fetch recived user data
@@ -136,7 +134,7 @@ class ProviderModelOpenID extends ProviderModel {
 		$this->setUserConnected();
 
 		// with openid providers we get the user profile only once, so store it 
-		Hybrid_Auth::storage()->set("hauth_session.{$this->providerId}.user", $this->user);
+		Auth::storage()->set("hauth_session.{$this->providerId}.user", $this->user);
 	}
 
 	// --------------------------------------------------------------------
@@ -146,11 +144,11 @@ class ProviderModelOpenID extends ProviderModel {
 	 */
 	function getUserProfile() {
 		// try to get the user profile from stored data
-		$this->user = Hybrid_Auth::storage()->get("hauth_session.{$this->providerId}.user");
+		$this->user = Auth::storage()->get("hauth_session.{$this->providerId}.user");
 
 		// if not found
 		if (!is_object($this->user)) {
-			throw new Exception("User profile request failed! User is not connected to {$this->providerId} or his session has expired.", 6);
+			throw new \Exception("User profile request failed! User is not connected to {$this->providerId} or his session has expired.", 6);
 		}
 
 		return $this->user->profile;

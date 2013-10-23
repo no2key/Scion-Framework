@@ -7,10 +7,10 @@ namespace Scion\Authentication\Adapter\HybridAuth;
 	*/
 
 /**
- * Hybrid_User_Profile object represents the current logged in user profile.
+ * UserProfile object represents the current logged in user profile.
  * The list of fields available in the normalized user profile structure used by HybridAuth.
  *
- * The Hybrid_User_Profile object is populated with as much information about the user as
+ * The UserProfile object is populated with as much information about the user as
  * HybridAuth was able to pull from the given API or authentication provider.
  *
  * http://hybridauth.sourceforge.net/userguide/Profile_Data_User_Profile.html

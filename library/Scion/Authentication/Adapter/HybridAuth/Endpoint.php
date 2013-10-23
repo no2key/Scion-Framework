@@ -46,12 +46,14 @@ class Endpoint {
 			self::processOpenidXRDS();
 		}
 
+		$route = RouteLoader::getRouter()->getMatchedRoute();
+
 		// If we get a hauth.start
-		if (isset(self::$request["hauth_start"]) && self::$request["hauth_start"]) {
+		if ($route->getName() == 'hauth_start') {
 			self::processAuthStart();
 		}
 		// Else if hauth.done
-		elseif (isset(self::$request["hauth_done"]) && self::$request["hauth_done"]) {
+		elseif ($route->getName() == 'hauth_done') {
 			self::processAuthDone();
 		}
 		// Else we advertise our XRDS document, something supposed to be done from the Realm URL page
@@ -108,7 +110,7 @@ class Endpoint {
 	public static function processAuthStart() {
 		self::authInit();
 
-		$provider_id = trim(strip_tags(self::$request["hauth_start"]));
+		$provider_id = trim(strip_tags(RouteLoader::getRouter()->getParam('id')));
 
 		# check if page accessed directly
 		if (! Auth::storage()->get("hauth_session.$provider_id.hauth_endpoint")) {
@@ -150,7 +152,7 @@ class Endpoint {
 	public static function processAuthDone() {
 		self::authInit();
 
-		$provider_id = trim(strip_tags(self::$request["hauth_done"]));
+		$provider_id = trim(strip_tags(RouteLoader::getRouter()->getParam('id')));
 
 		$hauth = Auth::setup($provider_id);
 

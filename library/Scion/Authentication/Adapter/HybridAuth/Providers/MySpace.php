@@ -1,14 +1,12 @@
 <?php
 namespace Scion\Authentication\Adapter\HybridAuth\Providers;
-/*!
-* HybridAuth
-* http://hybridauth.sourceforge.net | http://github.com/hybridauth/hybridauth
-* (c) 2009-2012, HybridAuth authors | http://hybridauth.sourceforge.net/licenses.html 
-*/
+
 use Scion\Authentication\Adapter\HybridAuth\ProviderModelOAuth1;
+use Scion\Authentication\Adapter\HybridAuth\UserActivity;
+use Scion\Authentication\Adapter\HybridAuth\UserContact;
 
 /**
- * Hybrid_Providers_MySpace provider adapter based on OAuth1 protocol
+ * MySpace provider adapter based on OAuth1 protocol
  *
  * http://hybridauth.sourceforge.net/userguide/IDProvider_info_MySpace.html
  */
@@ -33,7 +31,7 @@ class MySpace extends ProviderModelOAuth1 {
 		$response = $this->api->get('http://api.myspace.com/v1/user.json');
 
 		if (!isset($response->userId)) {
-			throw new Exception("User id request failed! {$this->providerId} returned an invalid response.");
+			throw new \Exception("User id request failed! {$this->providerId} returned an invalid response.");
 		}
 
 		return $response->userId;
@@ -48,7 +46,7 @@ class MySpace extends ProviderModelOAuth1 {
 		$data = $this->api->get('http://api.myspace.com/v1/users/' . $userId . '/profile.json');
 
 		if (!is_object($data)) {
-			throw new Exception("User profile request failed! {$this->providerId} returned an invalid response.", 6);
+			throw new \Exception("User profile request failed! {$this->providerId} returned an invalid response.", 6);
 		}
 
 		$this->user->profile->identifier  = $userId;
@@ -75,13 +73,13 @@ class MySpace extends ProviderModelOAuth1 {
 		$response = $this->api->get("http://api.myspace.com/v1/users/" . $userId . "/friends.json");
 
 		if (!is_object($response)) {
-			throw new Exception("User profile request failed! {$this->providerId} returned an invalid response.", 6);
+			throw new \Exception("User profile request failed! {$this->providerId} returned an invalid response.", 6);
 		}
 
 		$contacts = ARRAY();
 
 		foreach ($response->Friends as $item) {
-			$uc = new Hybrid_User_Contact();
+			$uc = new UserContact();
 
 			$uc->identifier  = $item->userId;
 			$uc->displayName = $item->name;
@@ -108,7 +106,7 @@ class MySpace extends ProviderModelOAuth1 {
 
 		// check the last HTTP status code returned
 		if ($this->api->http_code != 200) {
-			throw new Exception("Update user status failed! {$this->providerId} returned an error. " . $this->errorMessageByStatus($this->api->http_code));
+			throw new \Exception("Update user status failed! {$this->providerId} returned an error. " . $this->errorMessageByStatus($this->api->http_code));
 		}
 	}
 
@@ -128,17 +126,17 @@ class MySpace extends ProviderModelOAuth1 {
 		}
 
 		if (!is_object($response)) {
-			throw new Exception("User profile request failed! {$this->providerId} returned an invalid response.", 6);
+			throw new \Exception("User profile request failed! {$this->providerId} returned an invalid response.", 6);
 		}
 
-		$activities = ARRAY();
+		$activities = [];
 
 		if ($stream == "me") {
 			// todo
 		}
 		else {
 			foreach ($response->FriendsStatus as $item) {
-				$ua = new Hybrid_User_Activity();
+				$ua = new UserActivity();
 
 				$ua->id   = $item->statusId;
 				$ua->date = null; // to find out!!

@@ -1,6 +1,8 @@
 <?php
 namespace Scion\Authentication\Adapter\HybridAuth;
 
+use Scion\Http\Request;
+
 /**
  * self class
  * self class provide a simple way to authenticate users via OpenID and OAuth.
@@ -24,7 +26,7 @@ class Auth {
 	 * self constructor will require either a valid config array or
 	 * a path for a configuration file as parameter. To know more please
 	 * refer to the Configuration section:
-	 * http://hybridauth.sourceforge.net/userguide/Configuration.html
+	 * @see http://hybridauth.sourceforge.net/userguide/Configuration.html
 	 */
 	function __construct($config) {
 		self::initialize($config);
@@ -37,11 +39,17 @@ class Auth {
 	 */
 	public static function initialize($config) {
 		if (! is_array($config) && ! file_exists($config)) {
-			throw new \Exception("Hybriauth config does not exist on the given path.", 1);
+			throw new \Exception("HybridAuth config does not exist on the given path.", 1);
 		}
 
 		if (! is_array($config)) {
 			$config = include $config;
+		}
+
+		// base url (auto generated)
+		if (! isset($config['base_url'])) {
+			$request            = new Request();
+			$config['base_url'] = $request->getDynamicUrlPrefix() . $request->getRelativeUrlRoot() . '/';
 		}
 
 		// build some need'd paths
@@ -51,9 +59,9 @@ class Auth {
 		$config["path_providers"] = $config["path_base"] . "Providers/";
 
 		// reset debug mode
-		if (! isset($config["debug_mode"])) {
-			$config["debug_mode"] = false;
-			$config["debug_file"] = null;
+		if (! isset($config['debug']['enabled'])) {
+			$config['debug']['enabled'] = false;
+			$config['debug']['file']    = null;
 		}
 
 		// hash given config
@@ -115,7 +123,7 @@ class Auth {
 
 			// try to provide the previous if any
 			// Exception::getPrevious (PHP 5 >= 5.3.0) http://php.net/manual/en/exception.getprevious.php
-			if (version_compare(PHP_VERSION, '5.3.0', '>=') && ($p instanceof Exception)) {
+			if (version_compare(PHP_VERSION, '5.3.0', '>=') && ($p instanceof \Exception)) {
 				throw new \Exception($m, $c, $p);
 			}
 			else {

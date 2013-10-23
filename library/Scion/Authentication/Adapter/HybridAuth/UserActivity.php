@@ -1,13 +1,8 @@
 <?php
 namespace Scion\Authentication\Adapter\HybridAuth;
-	/*!
-	* HybridAuth
-	* http://hybridauth.sourceforge.net | http://github.com/hybridauth/hybridauth
-	* (c) 2009-2012, HybridAuth authors | http://hybridauth.sourceforge.net/licenses.html
-	*/
 
 /**
- * Hybrid_User_Activity
+ * UserActivity
  *
  * used to provider the connected user activity stream on a standardized structure across supported social apis.
  *
@@ -27,7 +22,7 @@ class UserActivity {
 	public $user = null;
 
 	public function __construct() {
-		$this->user = new stdClass();
+		$this->user = new \stdClass();
 
 		// typically, we should have a few information about the user who created the event from social apis
 		$this->user->identifier  = null;

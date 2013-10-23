@@ -1,10 +1,6 @@
 <?php
 namespace Scion\Authentication\Adapter\HybridAuth\Providers;
-	/*!
-	* HybridAuth
-	* http://hybridauth.sourceforge.net | http://github.com/hybridauth/hybridauth
-	* (c) 2009-2012, HybridAuth authors | http://hybridauth.sourceforge.net/licenses.html
-	*/
+
 
 /**
  * Yahoo OAuth Class
@@ -15,9 +11,11 @@ namespace Scion\Authentication\Adapter\HybridAuth\Providers;
  * @license             BSD License
  */
 use Scion\Authentication\Adapter\HybridAuth\ProviderModelOAuth1;
+use Scion\Authentication\Adapter\HybridAuth\UserActivity;
+use Scion\Authentication\Adapter\HybridAuth\UserContact;
 
 /**
- * Hybrid_Providers_Yahoo - Yahoo provider adapter based on OAuth1 protocol
+ * Yahoo - Yahoo provider adapter based on OAuth1 protocol
  */
 class Yahoo extends ProviderModelOAuth1 {
 	function initialize() {
@@ -39,7 +37,7 @@ class Yahoo extends ProviderModelOAuth1 {
 		$response = $this->api->get('user/' . $userId . '/profile', $parameters);
 
 		if (!isset($response->profile)) {
-			throw new Exception("User profile request failed! {$this->providerId} returned an invalid response.", 6);
+			throw new \Exception("User profile request failed! {$this->providerId} returned an invalid response.", 6);
 		}
 
 		$data = $response->profile;
@@ -95,7 +93,7 @@ class Yahoo extends ProviderModelOAuth1 {
 		$response = $this->api->get('user/' . $userId . '/contacts', $parameters);
 
 		if ($this->api->http_code != 200) {
-			throw new Exception('User contacts request failed! ' . $this->providerId . ' returned an error: ' . $this->errorMessageByStatus($this->api->http_code));
+			throw new \Exception('User contacts request failed! ' . $this->providerId . ' returned an error: ' . $this->errorMessageByStatus($this->api->http_code));
 		}
 
 		if (!$response->contacts->contact && ($response->errcode != 0)) {
@@ -105,7 +103,7 @@ class Yahoo extends ProviderModelOAuth1 {
 		$contacts = array();
 
 		foreach ($response->contacts->contact as $item) {
-			$uc = new Hybrid_User_Contact();
+			$uc = new UserContact();
 
 			$uc->identifier  = $this->selectGUID($item);
 			$uc->email       = $this->selectEmail($item->fields);
@@ -131,13 +129,13 @@ class Yahoo extends ProviderModelOAuth1 {
 		$response = $this->api->get('user/' . $userId . '/updates', $parameters);
 
 		if (!$response->updates || $this->api->http_code != 200) {
-			throw new Exception('User activity request failed! ' . $this->providerId . ' returned an error: ' . $this->errorMessageByStatus($this->api->http_code));
+			throw new \Exception('User activity request failed! ' . $this->providerId . ' returned an error: ' . $this->errorMessageByStatus($this->api->http_code));
 		}
 
 		$activities = array();
 
 		foreach ($response->updates as $item) {
-			$ua = new Hybrid_User_Activity();
+			$ua = new UserActivity();
 
 			$ua->id   = (property_exists($item, 'collectionID')) ? $item->collectionID : "";
 			$ua->date = (property_exists($item, 'lastUpdated')) ? $item->lastUpdated : "";
@@ -221,7 +219,7 @@ class Yahoo extends ProviderModelOAuth1 {
 		$response = $this->api->get('me/guid', $parameters);
 
 		if (!isset($response->guid->value)) {
-			throw new Exception("User id request failed! {$this->providerId} returned an invalid response.");
+			throw new \Exception("User id request failed! {$this->providerId} returned an invalid response.");
 		}
 
 		return $response->guid->value;

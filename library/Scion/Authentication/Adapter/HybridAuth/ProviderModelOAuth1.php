@@ -1,21 +1,18 @@
 <?php
 namespace Scion\Authentication\Adapter\HybridAuth;
-	/*!
-	* HybridAuth
-	* http://hybridauth.sourceforge.net | http://github.com/hybridauth/hybridauth
-	* (c) 2009-2012, HybridAuth authors | http://hybridauth.sourceforge.net/licenses.html
-	*/
+
+use Scion\Authentication\Adapter\HybridAuth\thirdparty\OAuth\OAuth1Client;
 
 /**
- * To implement an OAuth 1 based service provider, Hybrid_Provider_Model_OAuth1
+ * To implement an OAuth 1 based service provider, ProviderModelOAuth1
  * can be used to save the hassle of the authentication flow.
  *
- * Each class that inherit from Hybrid_Provider_Model_OAuth1 have to implemenent
+ * Each class that inherit from ProviderModelOAuth1 have to implemenent
  * at least 2 methods:
- *   Hybrid_Providers_{provider_name}::initialize()     to setup the provider api end-points urls
- *   Hybrid_Providers_{provider_name}::getUserProfile() to grab the user profile
+ *   Providers{provider_name}::initialize()     to setup the provider api end-points urls
+ *   Providers{provider_name}::getUserProfile() to grab the user profile
  *
- * Hybrid_Provider_Model_OAuth1 use OAuth1Client v0.1 which can be found on
+ * ProviderModelOAuth1 use OAuth1Client v0.1 which can be found on
  * Hybrid/thirdparty/OAuth/OAuth1Client.php
  */
 class ProviderModelOAuth1 extends ProviderModel {
@@ -51,12 +48,10 @@ class ProviderModelOAuth1 extends ProviderModel {
 	function initialize() {
 		// 1 - check application credentials
 		if (!$this->config["keys"]["key"] || !$this->config["keys"]["secret"]) {
-			throw new Exception("Your application key and secret are required in order to connect to {$this->providerId}.", 4);
+			throw new \Exception("Your application key and secret are required in order to connect to {$this->providerId}.", 4);
 		}
 
-		// 2 - include OAuth lib and client
-		require_once Hybrid_Auth::$config["path_libraries"] . "OAuth/OAuth.php";
-		require_once Hybrid_Auth::$config["path_libraries"] . "OAuth/OAuth1Client.php";
+		// 2 - No need to include OAuth lib and client, managed by Autoloader
 
 		// 3.1 - setup access_token if any stored
 		if ($this->token("access_token")) {
@@ -74,8 +69,8 @@ class ProviderModelOAuth1 extends ProviderModel {
 		}
 
 		// Set curl proxy if exist
-		if (isset(Hybrid_Auth::$config["proxy"])) {
-			$this->api->curl_proxy = Hybrid_Auth::$config["proxy"];
+		if (isset(Auth::$config["proxy"])) {
+			$this->api->curl_proxy = Auth::$config["proxy"];
 		}
 	}
 
@@ -92,18 +87,18 @@ class ProviderModelOAuth1 extends ProviderModel {
 
 		// check the last HTTP status code returned
 		if ($this->api->http_code != 200) {
-			throw new Exception("Authentication failed! {$this->providerId} returned an error. " . $this->errorMessageByStatus($this->api->http_code), 5);
+			throw new \Exception("Authentication failed! {$this->providerId} returned an error. " . $this->errorMessageByStatus($this->api->http_code), 5);
 		}
 
 		if (!isset($tokens["oauth_token"])) {
-			throw new Exception("Authentication failed! {$this->providerId} returned an invalid oauth token.", 5);
+			throw new \Exception("Authentication failed! {$this->providerId} returned an invalid oauth token.", 5);
 		}
 
 		$this->token("request_token", $tokens["oauth_token"]);
 		$this->token("request_token_secret", $tokens["oauth_token_secret"]);
 
 		# redirect the user to the provider authentication url
-		Hybrid_Auth::redirect($this->api->authorizeUrl($tokens));
+		Auth::redirect($this->api->authorizeUrl($tokens));
 	}
 
 	// --------------------------------------------------------------------
@@ -116,7 +111,7 @@ class ProviderModelOAuth1 extends ProviderModel {
 		$oauth_verifier = (array_key_exists('oauth_verifier', $_REQUEST)) ? $_REQUEST['oauth_verifier'] : "";
 
 		if (!$oauth_token || !$oauth_verifier) {
-			throw new Exception("Authentication failed! {$this->providerId} returned an invalid oauth verifier.", 5);
+			throw new \Exception("Authentication failed! {$this->providerId} returned an invalid oauth verifier.", 5);
 		}
 
 		// request an access token
@@ -127,12 +122,12 @@ class ProviderModelOAuth1 extends ProviderModel {
 
 		// check the last HTTP status code returned
 		if ($this->api->http_code != 200) {
-			throw new Exception("Authentication failed! {$this->providerId} returned an error. " . $this->errorMessageByStatus($this->api->http_code), 5);
+			throw new \Exception("Authentication failed! {$this->providerId} returned an error. " . $this->errorMessageByStatus($this->api->http_code), 5);
 		}
 
 		// we should have an access_token, or else, something has gone wrong
 		if (!isset($tokens["oauth_token"])) {
-			throw new Exception("Authentication failed! {$this->providerId} returned an invalid access token.", 5);
+			throw new \Exception("Authentication failed! {$this->providerId} returned an invalid access token.", 5);
 		}
 
 		// we no more need to store requet tokens
