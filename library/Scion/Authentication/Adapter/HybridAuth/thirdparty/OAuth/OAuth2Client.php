@@ -231,7 +231,7 @@ class OAuth2Client {
 
 		parse_str($result, $ouput);
 
-		$result = new StdClass();
+		$result = new \StdClass();
 
 		foreach ($ouput as $k => $v) {
 			$result->$k = $v;

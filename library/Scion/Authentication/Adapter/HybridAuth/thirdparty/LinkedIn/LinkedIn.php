@@ -10,6 +10,10 @@ namespace Scion\Authentication\Adapter\HybridAuth\thirdparty\LinkedIn;
 	 * @copyright Copyright 2011, fiftyMission Inc.
 	 * @license   http://www.opensource.org/licenses/mit-license.php The MIT License
 	 */
+use Scion\Authentication\Adapter\HybridAuth\thirdparty\OAuth\OAuthConsumer;
+use Scion\Authentication\Adapter\HybridAuth\thirdparty\OAuth\OAuthRequest;
+use Scion\Authentication\Adapter\HybridAuth\thirdparty\OAuth\OAuthSignatureMethodHMACSHA1;
+use Scion\Authentication\Adapter\HybridAuth\thirdparty\OAuth\OAuthToken;
 
 /**
  * 'LinkedIn' class declaration.
@@ -603,7 +607,7 @@ class LinkedIn {
 
 			// generate OAuth request
 			$oauth_req = OAuthRequest::from_consumer_and_token($oauth_consumer, $oauth_token, $method, $url, $parameters);
-			$oauth_req->sign_request(new OAuthSignatureMethod_HMAC_SHA1(), $oauth_consumer, $oauth_token);
+			$oauth_req->sign_request(new OAuthSignatureMethodHMACSHA1(), $oauth_consumer, $oauth_token);
 
 			// start cURL, checking for a successful initiation
 			if (!$handle = curl_init()) {
@@ -661,7 +665,7 @@ class LinkedIn {
 			// no exceptions thrown, return the data
 			return $return_data;
 		}
-		catch (OAuthException $e) {
+		catch (\OAuthException $e) {
 			// oauth exception raised
 			throw new LinkedInException('OAuth exception caught: ' . $e->getMessage());
 		}
@@ -1903,7 +1907,7 @@ class LinkedIn {
 	 *    Array containing retrieval success, LinkedIn response.
 	 */
 	public function search($options = null) {
-		return searchPeople($options);
+		return $this->searchPeople($options);
 	}
 
 	/**

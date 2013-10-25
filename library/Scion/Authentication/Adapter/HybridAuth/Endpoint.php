@@ -110,7 +110,7 @@ class Endpoint {
 	public static function processAuthStart() {
 		self::authInit();
 
-		$provider_id = trim(strip_tags(RouteLoader::getRouter()->getParam('id')));
+		$provider_id = trim(strip_tags(RouteLoader::getRouter()->getParam('provider')));
 
 		# check if page accessed directly
 		if (! Auth::storage()->get("hauth_session.$provider_id.hauth_endpoint")) {
@@ -152,7 +152,7 @@ class Endpoint {
 	public static function processAuthDone() {
 		self::authInit();
 
-		$provider_id = trim(strip_tags(RouteLoader::getRouter()->getParam('id')));
+		$provider_id = trim(strip_tags(RouteLoader::getRouter()->getParam('provider')));
 
 		$hauth = Auth::setup($provider_id);
 

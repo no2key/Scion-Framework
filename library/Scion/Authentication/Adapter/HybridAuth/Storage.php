@@ -5,6 +5,7 @@ namespace Scion\Authentication\Adapter\HybridAuth;
 	* http://hybridauth.sourceforge.net | http://github.com/hybridauth/hybridauth
 	* (c) 2009-2012, HybridAuth authors | http://hybridauth.sourceforge.net/licenses.html
 	*/
+use Scion\Views\TemplateEngine;
 
 /**
  * HybridAuth storage manager
@@ -47,6 +48,7 @@ class Storage {
 	public function set($key, $value) {
 		$key = strtolower($key);
 
+		if (!$value instanceof TemplateEngine)
 		$_SESSION["HA::STORE"][$key] = serialize($value);
 	}
 

@@ -93,12 +93,12 @@ class Google extends ProviderModelOAuth2 {
 		$response = $this->api->api("https://www.google.com/m8/feeds/contacts/default/full?" . http_build_query(array_merge(array('alt' => 'json'), $this->config['contacts_param'])));
 
 		if (!$response) {
-			return ARRAY();
+			return [];
 		}
 
-		$contacts = ARRAY();
+		$contacts = [];
 
-		foreach ($response->feed->entry as $idx => $entry) {
+		foreach ($response->feed->entry as $entry) {
 			$uc = new UserContact();
 
 			$uc->email       = isset($entry->{'gd$email'}[0]->address) ? (string)$entry->{'gd$email'}[0]->address : '';

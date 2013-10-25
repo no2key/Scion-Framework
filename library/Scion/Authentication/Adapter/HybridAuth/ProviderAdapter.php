@@ -1,10 +1,7 @@
 <?php
 namespace Scion\Authentication\Adapter\HybridAuth;
-	/*!
-	* HybridAuth
-	* http://hybridauth.sourceforge.net | http://github.com/hybridauth/hybridauth
-	* (c) 2009-2012, HybridAuth authors | http://hybridauth.sourceforge.net/licenses.html
-	*/
+
+use Scion\Http\Request;
 use Scion\Loader\RouteLoader;
 
 /**
@@ -121,11 +118,12 @@ class ProviderAdapter {
 		# 	auth.start  required  the IDp ID
 		# 	auth.time   optional  login request timestamp
 		//$this->params["login_start"] = $HYBRID_AUTH_URL_BASE . (strpos($HYBRID_AUTH_URL_BASE, '?') ? '&' : '?') . "hauth.start={$this->id}&hauth.time={$this->params["hauth_time"]}";
-		$this->params['login_start'] = RouteLoader::getRouter()->generate(Auth::$config['routes']['start'], ['id' => $this->id, 'time' => $this->params['hauth_time']]);
+		$this->params['login_start'] = rtrim((new Request())->getDynamicUrlPrefix(),"/") . RouteLoader::getRouter()->generate(Auth::$config['routes']['start'], ['provider' => $this->id, 'time' => $this->params['hauth_time']]);
 
 		# for default HybridAuth endpoint url hauth_login_done_url
 		# 	auth.done   required  the IDp ID
-		$this->params["login_done"] = $HYBRID_AUTH_URL_BASE . (strpos($HYBRID_AUTH_URL_BASE, '?') ? '&' : '?') . "hauth.done={$this->id}";
+		//$this->params["login_done"] = $HYBRID_AUTH_URL_BASE . (strpos($HYBRID_AUTH_URL_BASE, '?') ? '&' : '?') . "hauth.done={$this->id}";
+		$this->params['login_done'] = rtrim((new Request())->getDynamicUrlPrefix(),"/") . RouteLoader::getRouter()->generate(Auth::$config['routes']['done'], ['provider' => $this->id]);
 
 		Auth::storage()->set("hauth_session.{$this->id}.hauth_return_to", $this->params["hauth_return_to"]);
 		Auth::storage()->set("hauth_session.{$this->id}.hauth_endpoint", $this->params["login_done"]);

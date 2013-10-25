@@ -1,10 +1,6 @@
 <?php
 namespace Scion\Authentication\Adapter\HybridAuth\Providers;
-/*!
-* HybridAuth
-* http://hybridauth.sourceforge.net | http://github.com/hybridauth/hybridauth
-* (c) 2009-2012, HybridAuth authors | http://hybridauth.sourceforge.net/licenses.html
-*/
+
 use Scion\Authentication\Adapter\HybridAuth\Auth;
 use Scion\Authentication\Adapter\HybridAuth\ProviderModel;
 use Scion\Authentication\Adapter\HybridAuth\thirdparty\LinkedIn\LinkedInException;
@@ -48,7 +44,7 @@ class LinkedIn extends ProviderModel {
 			$this->token("oauth_token_secret", $response['linkedin']['oauth_token_secret']);
 
 			# redirect user to LinkedIn authorisation web page
-			Auth::redirect(LINKEDIN::_URL_AUTH . $response['linkedin']['oauth_token']);
+			Auth::redirect(\Scion\Authentication\Adapter\HybridAuth\thirdparty\LinkedIn\LinkedIn::_URL_AUTH . $response['linkedin']['oauth_token']);
 		}
 		else {
 			throw new \Exception("Authentication failed! {$this->providerId} returned an invalid Token.", 5);
