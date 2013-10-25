@@ -32,8 +32,8 @@ class ProviderAdapter {
 
 	/**
 	 * create a new adapter switch IDp name or ID
-	 * @param string $id      The id or name of the IDp
-	 * @param array  $params  (optional) required parameters by the adapter
+	 * @param string $id     The id or name of the IDp
+	 * @param array  $params (optional) required parameters by the adapter
 	 */
 	function factory($id, $params = null) {
 		Logger::info("Enter ProviderAdapter::factory( $id )");
@@ -45,33 +45,29 @@ class ProviderAdapter {
 		$this->config = $this->getConfigById($this->id);
 
 		# check the IDp id
-		if (! $this->id) {
+		if (!$this->id) {
 			throw new \Exception("No provider ID specified.", 2);
 		}
 
 		# check the IDp config
-		if (! $this->config) {
+		if (!$this->config) {
 			throw new \Exception("Unknown Provider ID, check your configuration file.", 3);
 		}
 
 		# check the IDp adapter is enabled
-		if (! $this->config["enabled"]) {
+		if (!$this->config["enabled"]) {
 			throw new \Exception("The provider '{$this->id}' is not enabled.", 3);
 		}
 
 		# include the adapter wrapper
 		if (isset($this->config["wrapper"]) && is_array($this->config["wrapper"])) {
-			//require_once $this->config["wrapper"]["path"];
-
-			if (! class_exists($this->config["wrapper"]["class"])) {
-				throw new \Exception("Unable to load the adapter class.", 3);
+			if (!class_exists($this->config["wrapper"]["class"])) {
+				throw new \Exception("Unable to load the adapter class: " . $this->config["wrapper"]["class"], 3);
 			}
 
 			$this->wrapper = $this->config["wrapper"]["class"];
 		}
 		else {
-			//require_once Auth::$config["path_providers"] . $this->id . ".php";
-
 			$this->wrapper = __NAMESPACE__ . '\Providers\\' . $this->id;
 		}
 
@@ -90,7 +86,7 @@ class ProviderAdapter {
 	function login() {
 		Logger::info("Enter ProviderAdapter::login( {$this->id} ) ");
 
-		if (! $this->adapter) {
+		if (!$this->adapter) {
 			throw new \Exception("ProviderAdapter::login() should not directly used.");
 		}
 
@@ -118,12 +114,14 @@ class ProviderAdapter {
 		# 	auth.start  required  the IDp ID
 		# 	auth.time   optional  login request timestamp
 		//$this->params["login_start"] = $HYBRID_AUTH_URL_BASE . (strpos($HYBRID_AUTH_URL_BASE, '?') ? '&' : '?') . "hauth.start={$this->id}&hauth.time={$this->params["hauth_time"]}";
-		$this->params['login_start'] = rtrim((new Request())->getDynamicUrlPrefix(),"/") . RouteLoader::getRouter()->generate(Auth::$config['routes']['start'], ['provider' => $this->id, 'time' => $this->params['hauth_time']]);
+		$this->params['login_start'] = rtrim((new Request())->getDynamicUrlPrefix(), "/") . RouteLoader::getRouter()->generate(Auth::$config['routes']['start'], ['provider' => $this->id,
+																																								 'time'      => $this->params['hauth_time']
+																																								 ]);
 
 		# for default HybridAuth endpoint url hauth_login_done_url
 		# 	auth.done   required  the IDp ID
 		//$this->params["login_done"] = $HYBRID_AUTH_URL_BASE . (strpos($HYBRID_AUTH_URL_BASE, '?') ? '&' : '?') . "hauth.done={$this->id}";
-		$this->params['login_done'] = rtrim((new Request())->getDynamicUrlPrefix(),"/") . RouteLoader::getRouter()->generate(Auth::$config['routes']['done'], ['provider' => $this->id]);
+		$this->params['login_done'] = rtrim((new Request())->getDynamicUrlPrefix(), "/") . RouteLoader::getRouter()->generate(Auth::$config['routes']['done'], ['provider' => $this->id]);
 
 		Auth::storage()->set("hauth_session.{$this->id}.hauth_return_to", $this->params["hauth_return_to"]);
 		Auth::storage()->set("hauth_session.{$this->id}.hauth_endpoint", $this->params["login_done"]);
@@ -168,11 +166,11 @@ class ProviderAdapter {
 	public function __call($name, $arguments) {
 		Logger::info("Enter ProviderAdapter::$name(), Provider: {$this->id}");
 
-		if (! $this->isUserConnected()) {
+		if (!$this->isUserConnected()) {
 			throw new \Exception("User not connected to the provider {$this->id}.", 7);
 		}
 
-		if (! method_exists($this->adapter, $name)) {
+		if (!method_exists($this->adapter, $name)) {
 			throw new \Exception("Call to undefined function Providers_{$this->id}::$name().");
 		}
 
@@ -191,20 +189,20 @@ class ProviderAdapter {
 	 * if the provider api use oauth
 	 */
 	public function getAccessToken() {
-		if (! $this->adapter->isUserConnected()) {
+		if (!$this->adapter->isUserConnected()) {
 			Logger::error("User not connected to the provider.");
 
 			throw new \Exception("User not connected to the provider.", 7);
 		}
 
-		return
-			ARRAY(
-				"access_token"        => $this->adapter->token("access_token"), // OAuth access token
-				"access_token_secret" => $this->adapter->token("access_token_secret"), // OAuth access token secret
-				"refresh_token"       => $this->adapter->token("refresh_token"), // OAuth refresh token
-				"expires_in"          => $this->adapter->token("expires_in"), // OPTIONAL. The duration in seconds of the access token lifetime
-				"expires_at"          => $this->adapter->token("expires_at"), // OPTIONAL. Timestamp when the access_token expire. if not provided by the social api, then it should be calculated: expires_at = now + expires_in
-			);
+		return ARRAY("access_token"        => $this->adapter->token("access_token"), // OAuth access token
+					 "access_token_secret" => $this->adapter->token("access_token_secret"), // OAuth access token secret
+					 "refresh_token"       => $this->adapter->token("refresh_token"), // OAuth refresh token
+					 "expires_in"          => $this->adapter->token("expires_in"),
+			// OPTIONAL. The duration in seconds of the access token lifetime
+					 "expires_at"          => $this->adapter->token("expires_at"),
+			// OPTIONAL. Timestamp when the access_token expire. if not provided by the social api, then it should be calculated: expires_at = now + expires_in
+		);
 	}
 
 	// --------------------------------------------------------------------
@@ -213,7 +211,7 @@ class ProviderAdapter {
 	 * Naive getter of the current connected IDp API client
 	 */
 	function api() {
-		if (! $this->adapter->isUserConnected()) {
+		if (!$this->adapter->isUserConnected()) {
 			Logger::error("User not connected to the provider.");
 
 			throw new \Exception("User not connected to the provider.", 7);

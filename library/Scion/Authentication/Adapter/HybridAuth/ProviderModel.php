@@ -116,9 +116,9 @@ abstract class ProviderModel {
 	 * grab the user profile from the IDp api client
 	 */
 	function getUserProfile() {
-		Logger::error("HybridAuth do not provide users contats list for {$this->providerId} yet.");
+		Logger::error("HybridAuth do not provide users contacts list for {$this->providerId} yet.");
 
-		throw new \Exception("Provider does not support this feature.", 8);
+		throw new \Exception("Provider does not support this feature (userProfile).", 8);
 	}
 
 	// --------------------------------------------------------------------
@@ -127,9 +127,9 @@ abstract class ProviderModel {
 	 * load the current logged in user contacts list from the IDp api client
 	 */
 	function getUserContacts() {
-		Logger::error("HybridAuth do not provide users contats list for {$this->providerId} yet.");
+		Logger::error("HybridAuth do not provide users contacts list for {$this->providerId} yet.");
 
-		throw new \Exception("Provider does not support this feature.", 8);
+		throw new \Exception("Provider does not support this feature (userContacts).", 8);
 	}
 
 	// --------------------------------------------------------------------
@@ -140,7 +140,7 @@ abstract class ProviderModel {
 	function getUserActivity($stream) {
 		Logger::error("HybridAuth do not provide user's activity stream for {$this->providerId} yet.");
 
-		throw new \Exception("Provider does not support this feature.", 8);
+		throw new \Exception("Provider does not support this feature (userActivity).", 8);
 	}
 
 	// --------------------------------------------------------------------
@@ -151,7 +151,7 @@ abstract class ProviderModel {
 	function setUserStatus($status) {
 		Logger::error("HybridAuth do not provide user's activity stream for {$this->providerId} yet.");
 
-		throw new \Exception("Provider does not support this feature.", 8);
+		throw new \Exception("Provider does not support this feature (userStatus).", 8);
 	}
 
 	// --------------------------------------------------------------------
