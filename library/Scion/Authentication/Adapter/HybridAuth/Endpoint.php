@@ -163,7 +163,7 @@ class Endpoint {
 		}
 		catch (\Exception $e) {
 			Logger::error("Exception:" . $e->getMessage(), $e);
-			Error::setError($e->getMessage(), $e->getCode(), $e->getTraceAsString(), $e);
+			Error::setError($e->getMessage(), $e->getCode(), $e->getTraceAsString(), $e->getPrevious());
 
 			$hauth->adapter->setUserUnconnected();
 		}
