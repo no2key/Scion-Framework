@@ -10,7 +10,7 @@ class Dailymotion extends ProviderModelOAuth2 {
 	private $_scope = 'read write email userinfo';
 
 	// see http://www.dailymotion.com/doc/api/obj-user.html
-	private $_fields = 'address,avatar_120_url,birthday,city,id,email,fullname,country,description,gender,language,first_name,last_name,phone,screenname,username';
+	private $_fields = 'address,avatar_120_url,birthday,city,id,email,country,description,gender,language,first_name,last_name,phone,screenname,username';
 
 	/**
 	 * IDp wrappers initializer
@@ -63,6 +63,7 @@ class Dailymotion extends ProviderModelOAuth2 {
 		$this->user->profile->identifier  = (property_exists($response, 'id')) ? $response->id : '';
 		$this->user->profile->displayName = (property_exists($response, 'screenname')) ? $response->screenname : '';
 		$this->user->profile->address     = (property_exists($response, 'address')) ? $response->address : '';
+		$this->user->profile->email       = (property_exists($response, 'email')) ? $response->email : '';
 		$this->user->profile->city        = (property_exists($response, 'city')) ? $response->city : '';
 		$this->user->profile->birthDay    = (property_exists($response, 'birthday')) ? $response->birthday : '';
 		$this->user->profile->country     = (property_exists($response, 'country')) ? $response->country : '';
