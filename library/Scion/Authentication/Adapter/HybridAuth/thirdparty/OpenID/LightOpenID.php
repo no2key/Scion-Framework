@@ -246,7 +246,7 @@ class LightOpenID {
 		}
 
 		if (curl_errno($curl)) {
-			throw new ErrorException(curl_error($curl), curl_errno($curl));
+			throw new \ErrorException(curl_error($curl), curl_errno($curl));
 		}
 
 		return $response;
@@ -282,7 +282,7 @@ class LightOpenID {
 
 	protected function request_streams($url, $method = 'GET', $params = array(), $update_claimed_id) {
 		if (!$this->hostExists($url)) {
-			throw new ErrorException("Could not connect to $url.", 404);
+			throw new \ErrorException("Could not connect to $url.", 404);
 		}
 
 		$params = http_build_query($params, '', '&');
