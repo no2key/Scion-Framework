@@ -1,5 +1,6 @@
 <?php
 namespace Scion\Authentication\Adapter\HybridAuth;
+
 /*!
 * HybridAuth
 * http://hybridauth.sourceforge.net | http://github.com/hybridauth/hybridauth
@@ -77,15 +78,10 @@ class Endpoint {
 	public static function processOpenidXRDS() {
 		header("Content-Type: application/xrds+xml");
 
-		$output = str_replace
-		(
-			"{RETURN_TO_URL}",
-			str_replace(
-				array("<", ">", "\"", "'", "&"), array("&lt;", "&gt;", "&quot;", "&apos;", "&amp;"),
-				Auth::getCurrentUrl(false)
-			),
-			file_get_contents(dirname(__FILE__) . "/resources/openid_xrds.xml")
-		);
+		$output = str_replace("{RETURN_TO_URL}", str_replace(array("<", ">", "\"", "'", "&"), array("&lt;", "&gt;",
+																									"&quot;", "&apos;",
+																									"&amp;"
+																							  ), Auth::getCurrentUrl(false)), file_get_contents(dirname(__FILE__) . "/resources/openid_xrds.xml"));
 		print $output;
 		die();
 	}
@@ -94,12 +90,7 @@ class Endpoint {
 	 * Process OpenID realm request
 	 */
 	public static function processOpenidRealm() {
-		$output = str_replace
-		(
-			"{X_XRDS_LOCATION}",
-			htmlentities(Auth::getCurrentUrl(false), ENT_QUOTES, 'UTF-8') . "?get=openid_xrds&v=" . Auth::$version,
-			file_get_contents(dirname(__FILE__) . "/resources/openid_realm.html")
-		);
+		$output = str_replace("{X_XRDS_LOCATION}", htmlentities(Auth::getCurrentUrl(false), ENT_QUOTES, 'UTF-8') . "?get=openid_xrds&v=" . Auth::$version, file_get_contents(dirname(__FILE__) . "/resources/openid_realm.html"));
 		print $output;
 		die();
 	}
@@ -113,8 +104,8 @@ class Endpoint {
 		$provider_id = trim(strip_tags(RouteLoader::getRouter()->getParam('provider')));
 
 		# check if page accessed directly
-		if (! Auth::storage()->get("hauth_session.$provider_id.hauth_endpoint")) {
-			Logger::error("self: hauth_endpoint parameter is not defined on hauth_start, halt login process!");
+		if (!Auth::storage()->get("hauth_session.$provider_id.hauth_endpoint")) {
+			Logger::error("Endpoint: hauth_endpoint parameter is not defined on hauth_start, halt login process!");
 
 			header("HTTP/1.0 404 Not Found");
 			die("You cannot access this page directly.");
@@ -123,22 +114,22 @@ class Endpoint {
 		# define:hybrid.endpoint.php step 2.
 		$hauth = Auth::setup($provider_id);
 
-		# if REQUESTed hauth_idprovider is wrong, session not created, etc.
-		if (! $hauth) {
-			Logger::error("self: Invalid parameter on hauth_start!");
+		# if REQUESTED hauth_idprovider is wrong, session not created, etc.
+		if (!$hauth) {
+			Logger::error("Endpoint: Invalid parameter on hauth_start!");
 
 			header("HTTP/1.0 404 Not Found");
 			die("Invalid parameter! Please return to the login page and try again.");
 		}
 
 		try {
-			Logger::info("self: call adapter [{$provider_id}] loginBegin()");
+			Logger::info("Endpoint: call adapter [{$provider_id}] loginBegin()");
 
 			$hauth->adapter->loginBegin();
 		}
 		catch (\Exception $e) {
 			Logger::error("Exception:" . $e->getMessage(), $e);
-			Error::setError($e->getMessage(), $e->getCode(), $e->getTraceAsString(), $e);
+			Error::setError($e->getMessage(), $e->getCode(), $e->getTraceAsString(), $e->getPrevious());
 
 			$hauth->returnToCallbackUrl();
 		}
@@ -156,8 +147,8 @@ class Endpoint {
 
 		$hauth = Auth::setup($provider_id);
 
-		if (! $hauth) {
-			Logger::error("self: Invalid parameter on hauth_done!");
+		if (!$hauth) {
+			Logger::error("Endpoint: Invalid parameter on hauth_done!");
 
 			$hauth->adapter->setUserUnconnected();
 
@@ -166,7 +157,7 @@ class Endpoint {
 		}
 
 		try {
-			Logger::info("self: call adapter [{$provider_id}] loginFinish() ");
+			Logger::info("Endpoint: call adapter [{$provider_id}] loginFinish() ");
 
 			$hauth->adapter->loginFinish();
 		}
@@ -177,14 +168,14 @@ class Endpoint {
 			$hauth->adapter->setUserUnconnected();
 		}
 
-		Logger::info("self: job done. retrun to callback url.");
+		Logger::info("Endpoint: job done. retrun to callback url.");
 
 		$hauth->returnToCallbackUrl();
 		die();
 	}
 
 	public static function authInit() {
-		if (! self::$initDone) {
+		if (!self::$initDone) {
 			self::$initDone = true;
 
 			# Init Auth
@@ -192,7 +183,7 @@ class Endpoint {
 				$storage = new Storage();
 
 				// Check if Auth session already exist
-				if (! $storage->config("CONFIG")) {
+				if (!$storage->config("CONFIG")) {
 					header("HTTP/1.0 404 Not Found");
 					die("You cannot access this page directly.");
 				}
@@ -200,7 +191,7 @@ class Endpoint {
 				Auth::initialize($storage->config("CONFIG"));
 			}
 			catch (\Exception $e) {
-				Logger::error("self: Error while trying to init Auth");
+				Logger::error("Endpoint: Error while trying to init Auth");
 
 				header("HTTP/1.0 404 Not Found");
 				die("Oophs. Error!");

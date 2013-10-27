@@ -48,7 +48,6 @@ class Storage {
 	public function set($key, $value) {
 		$key = strtolower($key);
 
-		if (!$value instanceof TemplateEngine)
 		$_SESSION["HA::STORE"][$key] = serialize($value);
 	}
 
