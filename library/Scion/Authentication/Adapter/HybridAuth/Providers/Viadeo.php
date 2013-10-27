@@ -6,13 +6,14 @@ use Scion\Authentication\Adapter\HybridAuth\ProviderModel;
 use Scion\Authentication\Adapter\HybridAuth\thirdparty\Viadeo\ViadeoAPI;
 use Scion\Authentication\Adapter\HybridAuth\thirdparty\Viadeo\ViadeoAPIException;
 use Scion\Authentication\Adapter\HybridAuth\thirdparty\Viadeo\ViadeoException;
+use Scion\Authentication\Adapter\HybridAuth\UserContact;
 
 class Viadeo extends ProviderModel {
 	/**
 	 * IDp wrappers initializer
 	 */
 	function initialize() {
-		if (! $this->config["keys"]["id"] || ! $this->config["keys"]["secret"]) {
+		if (!$this->config["keys"]["id"] || !$this->config["keys"]["secret"]) {
 			throw new \Exception("Your application id and secret are required in order to connect to {$this->providerId}.", 4);
 		}
 
@@ -25,10 +26,8 @@ class Viadeo extends ProviderModel {
 			$this->api = new ViadeoAPI();
 		}
 
-		$this->api->init(array(
-							  'store'         => true,
-							  'client_id'     => $this->config["keys"]["id"],
-							  'client_secret' => $this->config["keys"]["secret"]
+		$this->api->init(array('store'         => true, 'client_id' => $this->config["keys"]["id"],
+							   'client_secret' => $this->config["keys"]["secret"]
 						 ));
 	}
 
@@ -61,7 +60,7 @@ class Viadeo extends ProviderModel {
 			throw new \Exception("Authentication failed! An error occured during {$this->providerId} authentication", 5);
 		}
 
-		if (! $this->api->isAuthenticated()) {
+		if (!$this->api->isAuthenticated()) {
 			throw new \Exception("Authentication failed! An error occured during {$this->providerId} authentication", 5);
 		}
 
@@ -92,7 +91,7 @@ class Viadeo extends ProviderModel {
 			throw new \Exception("User profile request failed! {$this->providerId} returned an error while requesting the user profile. $e.", 6);
 		}
 
-		if (! is_object($data)) {
+		if (!is_object($data)) {
 			throw new \Exception("User profile request failed! {$this->providerId} api returned an invalid response.", 6);
 		}
 
@@ -118,6 +117,37 @@ class Viadeo extends ProviderModel {
 		$this->user->profile->zip     = @ $data->location->zipcode;
 
 		return $this->user->profile;
+	}
+
+	/**
+	 * load the user contacts
+	 * Note : you must select a maximum number of contacts to retrieve below, with the "limit" parameter
+	 */
+	function getUserContacts() {
+		try {
+			$data = $this->api->get("/me/contacts?limit=500&user_detail=partial")->execute();
+		}
+		catch (ViadeoAPIException $e) {
+			throw new \Exception("Contacts request failed! Error message provided by {$this->providerId} : " . $e->getMessage(), 6); //User profile request failed! {$this->providerId} returned an error while requesting the user profile. $e.
+		}
+
+		if (!$data || $data->count == 0) {
+			return [];
+		}
+
+		$contacts = [];
+
+		foreach ($data->data as $item) {
+			$uc = new UserContact();
+
+			$uc->identifier  = (isset($item->id)) ? $item->id : "";
+			$uc->displayName = (isset($item->name)) ? $item->name : "";
+			$uc->profileURL  = (isset($item->link)) ? $item->link : "";
+			$uc->photoURL    = (isset($item->picture_large)) ? $item->picture_large : "";
+			$uc->description = (isset($item->headline)) ? $item->headline : "";
+
+			$contacts[] = $uc;
+		}
 	}
 
 } 
