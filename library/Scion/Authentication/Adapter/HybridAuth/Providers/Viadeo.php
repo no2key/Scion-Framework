@@ -17,8 +17,6 @@ class Viadeo extends ProviderModel {
 			throw new \Exception("Your application id and secret are required in order to connect to {$this->providerId}.", 4);
 		}
 
-		require_once Auth::$config["path_libraries"] . "Viadeo/ViadeoAPI.php";
-
 		if ($this->token("access_token")) {
 			$this->api = new ViadeoAPI($this->token("access_token"));
 		}
