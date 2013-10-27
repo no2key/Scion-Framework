@@ -27,7 +27,7 @@ class Bitbucket extends ProviderModelOAuth1 {
 			throw new \Exception('User profile request failed! {$this->providerId} returned an invalid response.', 6);
 		}
 
-		$this->user->profile->identifier    = (property_exists($response->user, 'resource_uri')) ? $response->user->resource_uri : '';
+		$this->user->profile->identifier    = (property_exists($response->user, 'resource_uri')) ? $response->user->username : '';
 		$this->user->profile->firstName     = (property_exists($response->user, 'first_name')) ? $response->user->first_name : '';
 		$this->user->profile->lastName      = (property_exists($response->user, 'last_name')) ? $response->user->last_name : '';
 		$this->user->profile->displayName   = (property_exists($response->user, 'display_name')) ? $response->user->display_name : '';
@@ -36,4 +36,4 @@ class Bitbucket extends ProviderModelOAuth1 {
 
 		return $this->user->profile;
 	}
-} 
+}
