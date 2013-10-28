@@ -5,47 +5,39 @@ use Dwoo\Core;
 use Dwoo\ITemplate;
 use Dwoo\Template\File;
 use Scion\File\Json;
+use Scion\Mvc\Singleton;
+use Scion\Scion;
 
 class TemplateEngine extends Core {
+	use Singleton;
 
-	/**
-	 * Stores a Core instance
-	 * @var
-	 */
-	protected static $instance;
+	public function __construct() {
+		//$this->debugMode = true;
+		$template = Json::decode(file_get_contents(Scion::getJsonConfiguration()->configuration->framework->template));
 
-	/**
-	 * Singleton accessor, use it to access this object if you need to call specific Dwoo functions
-	 * @return TemplateEngine
-	 */
-	public static function getInstance() {
-		if (self::$instance === null) {
-			self::$instance = new self();
+		if ($template) {
+			if (property_exists($template->dwoo, 'cache')) {
+				$this->setCacheDir($template->dwoo->cache);
+			}
+
+			if (property_exists($template->dwoo, 'compiled')) {
+				$this->setCompileDir($template->dwoo->compiled);
+			}
+
+			if (property_exists($template->dwoo, 'view')) {
+				$this->setTemplateDir($template->dwoo->view);
+			}
 		}
 
-		return self::$instance;
-	}
+		// Initialize globals
+		$this->initGlobals();
 
-	/**
-	 * Initialize default values to dwoo
-	 * @param $configFile
-	 */
-	public static function init($configFile) {
-		$template = Json::decode(file_get_contents($configFile))->dwoo;
-
-		if (property_exists($template, 'cache')) {
-			self::$instance->setCacheDir($template->cache);
-		}
-
-		if (property_exists($template, 'compiled')) {
-			self::$instance->setCompileDir($template->compiled);
-		}
-
-		if (property_exists($template, 'view')) {
-			self::$instance->setTemplateDir($template->view);
-		}
-
-		// Register custom plugins directory
-		//self::$instance->getLoader()->addDirectory(SCION_DIR . 'Views' . DIRECTORY_SEPARATOR . 'plugins' . DIRECTORY_SEPARATOR);
+		// Add directory to the scion framework plugins for Dwoo
+		/**
+		 * TODO nedd to fix bug with 'addDirectory()' method :(
+		 */
+		//$this->getLoader()->addDirectory(SCION_DIR . 'Views/plugins/');
+		$this->addPlugin('url', '\Scion\Views\plugins\functionUrl');
+		$this->addPlugin('javascript', '\Scion\Views\plugins\functionJavascriptGlobals');
 	}
 }
