@@ -5,6 +5,8 @@ use Scion\Http\Client;
 
 class Log {
 
+	const UNKNOWN_UID = 'UNKNOWN';
+
 	private $_dbh;
 
 	public function __construct($dbh) {
@@ -18,7 +20,7 @@ class Log {
 	* @param string $info
 	* @return bool
 	*/
-	public function addNew($uid = 'UNKNOWN', $action, $info) {
+	public function addNew($uid = self::UNKNOWN_UID, $action, $info) {
 		if (strlen($action) == 0) {
 			return false;
 		}

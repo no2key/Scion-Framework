@@ -54,7 +54,11 @@ class Session {
 	 * @return bool
 	 */
 	public function deleteFromHash($hash) {
-		return $this->_dbh->deleteFrom('sessions')->where('hash', $hash)->execute();
+		$query = $this->_dbh->deleteFrom('sessions')->where('hash', $hash)->execute();
+		if ($query) {
+			return $this->_dbh->from('sessions')->select(null)->select('uid')->where('hash', $hash)->execute()->fetch(Pdo::FETCH_ASSOC);
+		}
+		return false;
 	}
 
 	/**

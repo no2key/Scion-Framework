@@ -28,6 +28,7 @@ class DbTable implements AdapterInterface {
 	private $_session;
 	private $_user;
 	private $_activation;
+	private $_registration;
 
 	protected function __construct($dbh) {
 		if (!$dbh instanceof AbstractProvider) {
@@ -48,6 +49,76 @@ class DbTable implements AdapterInterface {
 	 */
 	public function isLoggedIn($hash) {
 		return $this->_checkSession($hash);
+	}
+
+	/**
+	 * Login from a provider (e.g. google, facebook, twitter, ...)
+	 * @param $provider
+	 * @param $username
+	 * @param $password
+	 * @return array
+	 */
+	public function loginProvider($provider, $username, $password) {
+		$return = [];
+
+		if ($this->_attempts->isBlocked()) {
+			$return['code'] = 0;
+
+			return $return;
+		}
+
+		if (strlen($username) == 0 || strlen($username) > 30 || strlen($username) < 3) {
+			$return['code'] = 1;
+			$this->_attempts->add();
+
+			return $return;
+		}
+		else {
+			if ($userdata = $this->_user->getUserData($username)) {
+				if ($password === $userdata['password']) {
+					if ($userdata['isactive'] == 1) {
+
+						$sessiondata = $this->_session->add($userdata['uid'], "+1 hour");
+
+						$return['code']         = 4;
+						$return['session_hash'] = $sessiondata['hash'];
+						$return['expire']       = $sessiondata['expire'];
+
+						$this->_log->addNew($userdata['uid'], "LOGIN_SUCCESS", "User logged in. Session hash : " . $sessiondata['hash']);
+						$this->_log->addNew($userdata['uid'], "LOGIN_SUCCESS_FROM_PROVIDER", "Logged in from : " . $provider);
+
+						return $return;
+					}
+					else {
+						$this->_attempts->add();
+
+						$this->_log->addNew($userdata['uid'], "LOGIN_FAIL_NONACTIVE", "Account inactive");
+
+						$return['code'] = 3;
+
+						return $return;
+					}
+				}
+				else {
+					$this->_attempts->add();
+
+					$this->_log->addNew($userdata['uid'], "LOGIN_FAIL_PASSWORD", "Password incorrect");
+
+					$return['code'] = 2;
+
+					return $return;
+				}
+			}
+			else {
+				$this->_attempts->add();
+
+				$this->_log->addNew(Log::UNKNOWN_UID, "LOGIN_FAIL_USERNAME", "Attempted login with the username : {$username} -> Username doesn't exist in DB");
+
+				$return['code'] = 2;
+
+				return $return;
+			}
+		}
 	}
 
 	/**
@@ -124,7 +195,7 @@ class DbTable implements AdapterInterface {
 			else {
 				$this->_attempts->add();
 
-				$this->_log->addNew("", "LOGIN_FAIL_USERNAME", "Attempted login with the username : {$username} -> Username doesn't exist in DB");
+				$this->_log->addNew(Log::UNKNOWN_UID, "LOGIN_FAIL_USERNAME", "Attempted login with the username : {$username} -> Username doesn't exist in DB");
 
 				$return['code'] = 2;
 
@@ -135,6 +206,7 @@ class DbTable implements AdapterInterface {
 
 	/**
 	 * Logs out the session, identified by hash
+	 * @param $hash
 	 * @return bool
 	 */
 	public function logout($hash) {
@@ -145,7 +217,9 @@ class DbTable implements AdapterInterface {
 		$return = $this->_session->deleteFromHash($hash);
 
 		if ($return) {
+			unset($_COOKIE['auth_session']);
 			setcookie('auth_session', $hash, time() - 3600, '/', '', false, true);
+			$this->_log->addNew($return['uid'], 'LOGOUT_SUCCESSFULLY', 'User logged out successfully');
 		}
 
 		return $return;
