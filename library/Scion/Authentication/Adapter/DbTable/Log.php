@@ -32,7 +32,7 @@ class Log {
 			return false;
 		}
 		else {
-			return $this->_dbh->insertInto('log', ['username' => $uid, 'action' => $action, 'info' => $info, 'ip' => (new Client())->getIp()]);
+			return $this->_dbh->insertInto('log', ['uid' => $uid, 'action' => $action, 'info' => $info, 'ip' => (new Client())->getIp()])->execute();
 		}
 	}
 }
