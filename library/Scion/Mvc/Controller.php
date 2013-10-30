@@ -53,7 +53,7 @@ trait Controller {
 	 * Get Request object
 	 * @return Request
 	 */
-	public function getRequest() {
+	final public function getRequest() {
 		return new Request();
 
 	}

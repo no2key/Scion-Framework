@@ -1,7 +1,7 @@
 <?php
 namespace Scion\Mvc;
 
-trait Magic {
+trait GetterSetter {
 
 	/**
 	 * Provide magic method getter

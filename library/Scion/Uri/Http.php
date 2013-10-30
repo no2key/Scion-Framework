@@ -29,7 +29,7 @@ class Http extends Uri {
 	 * @return bool
 	 */
 	public static function isLocalhost() {
-		return $_SERVER["HTTP_HOST"] == "127.0.0.1" || !preg_match('/(\.[\d\w]+)+/', $_SERVER["HTTP_HOST"]);
+		return $_SERVER['HTTP_HOST'] == '127.0.0.1' || !preg_match('/(\.[\d\w]+)+/', $_SERVER['HTTP_HOST']);
 	}
 
 }

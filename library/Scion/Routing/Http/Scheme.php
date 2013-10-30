@@ -1,11 +1,11 @@
 <?php
 namespace Scion\Routing\Http;
 
-use Scion\Mvc\Magic;
+use Scion\Mvc\GetterSetter;
 use Scion\Uri\Http;
 
 class Scheme {
-	use Magic;
+	use GetterSetter;
 
 	private $_scheme;
 	private $_isSecure;

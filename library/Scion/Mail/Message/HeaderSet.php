@@ -41,6 +41,7 @@ class HeaderSet implements Countable, IteratorAggregate {
 
 			return true;
 		}
+		return false;
 	}
 
 	/**

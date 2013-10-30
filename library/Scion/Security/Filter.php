@@ -11,7 +11,7 @@ class Filter {
 	public static function clean($str) {
 		if (is_array($str) OR is_object($str)) {
 			foreach ($str as $k => $s) {
-				$str[$k] = Security::xss_clean($s);
+				$str[$k] = self::clean($s);
 			}
 
 			return $str;

@@ -1,10 +1,10 @@
 <?php
 namespace Scion\Routing\Http;
 
-use Scion\Mvc\Magic;
+use Scion\Mvc\GetterSetter;
 
 class Pattern {
-	use Magic;
+	use GetterSetter;
 
 	private $_pattern;
 	private $_additionalParameters;

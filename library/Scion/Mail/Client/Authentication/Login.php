@@ -32,6 +32,7 @@ class Login extends AbstractAuthentication implements Authentication {
 
 			return $connection->read()->getCode() === Authentication::AUTHENTICATION_PERFORMED;
 		}
+		return false;
 	}
 
 }

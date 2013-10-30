@@ -3,6 +3,12 @@ namespace Scion\Authentication\Adapter\DbTable;
 
 class Reset {
 
+	private $_dbh;
+
+	public function __construct($dbh) {
+		$this->_dbh = $dbh;
+	}
+
 
 	/**
 	* Creates a reset entry and sends email to user
@@ -23,7 +29,7 @@ class Reset {
 			$query  = $this->dbh->prepare("INSERT INTO " . $this->config->table_resets . " (uid, resetkey, expiredate) VALUES (?, ?, ?)");
 			$return = $query->execute(array($uid, $resetkey, $expiredate));
 
-			if ($return) {
+			/*if ($return) {
 				$emailTemplate = new Localization\Handler(array('base_url' => $this->config->base_url,
 																'key'      => $resetkey
 														  ), $this->config->lang);
@@ -31,7 +37,7 @@ class Reset {
 				$emailTemplate = $emailTemplate->getResetEmail();
 
 				@mail($email, $emailTemplate['subject'], $emailTemplate['body'], $emailTemplate['head']);
-			}
+			}*/
 
 			return $return;
 		}
@@ -50,7 +56,7 @@ class Reset {
 			$query  = $this->dbh->prepare("INSERT INTO " . $this->config->table_resets . " (uid, resetkey, expiredate) VALUES (?, ?, ?)");
 			$return = $query->execute(array($uid, $resetkey, $expiredate));
 
-			if ($return) {
+			/*if ($return) {
 				$emailTemplate = new Localization\Handler(array('base_url' => $this->config->base_url,
 																'key'      => $resetkey
 														  ), $this->config->lang);
@@ -58,7 +64,7 @@ class Reset {
 				$emailTemplate = $emailTemplate->getResetEmail();
 
 				@mail($email, $emailTemplate['subject'], $emailTemplate['body'], $emailTemplate['head']);
-			}
+			}*/
 
 			return $return;
 		}

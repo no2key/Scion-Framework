@@ -74,6 +74,7 @@ class Message implements Encodable {
 
 			return $this;
 		}
+		return false;
 	}
 
 	/**

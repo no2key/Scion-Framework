@@ -50,7 +50,7 @@ trait Singleton {
 	 * @access public
 	 */
 	public function __sleep() {
-		trigger_error('Unserializing ' . __CLASS__ . ' is not allowed.', E_USER_ERROR);
+		strigger_error('Unerializing ' . __CLASS__ . ' is not allowed.', E_USER_ERROR);
 	}
 
 	/**

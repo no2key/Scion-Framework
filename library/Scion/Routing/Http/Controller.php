@@ -1,10 +1,10 @@
 <?php
 namespace Scion\Routing\Http;
 
-use Scion\Mvc\Magic;
+use Scion\Mvc\GetterSetter;
 
 class Controller {
-	use Magic;
+	use GetterSetter;
 
 	private $_calledController;
 	private $_calledClass;

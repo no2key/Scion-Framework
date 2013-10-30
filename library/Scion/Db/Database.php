@@ -29,7 +29,7 @@ class Database {
 
 
 	public static function initNoSql($name = 'default') {
-
+		return null;
 	}
 
 	public static function getSqlInstance($name = 'default') {

@@ -1,6 +1,7 @@
 <?php
 namespace Scion\Loader;
 
+use Scion\File\FileIterator;
 use Scion\Routing\Http\Controller;
 use Scion\Routing\Http\Format;
 use Scion\Routing\Route;
@@ -41,13 +42,20 @@ class RouteLoader {
 					// Add a child route
 					if (property_exists($values, 'children')) {
 						if (is_string($values->children)) {
-							$childRoutes = Json::decode(file_get_contents(dirname($_SERVER["SCRIPT_FILENAME"]) . $values->children));
-							$funcRoutes($childRoutes->routes, $values->pattern);
+							if (!empty($values->children) && file_exists(dirname($_SERVER["SCRIPT_FILENAME"]) . $values->children)) {
+								$childRoutes = Json::decode(file_get_contents(dirname($_SERVER["SCRIPT_FILENAME"]) . $values->children));
+								$funcRoutes($childRoutes->routes, $values->pattern);
+							}
+						}
+						else if (is_object($values->children)) {
+							$funcRoutes($values->children, $values->pattern);
 						}
 					}
 				}
 			};
 			$funcRoutes(self::$_routes->routes);
+
+			//var_dump(self::$_router->getHashedRoutes());
 
 			try {
 				// Find valid route

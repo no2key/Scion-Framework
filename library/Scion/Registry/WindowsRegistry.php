@@ -94,6 +94,7 @@ class WindowsRegistry {
 			case self::REG_MULTI_SZ:
 				return $this->_getMultiStringValue($hKeyId, $subKey, $valueName, $asString);
 		}
+		return null;
 	}
 
 	/**

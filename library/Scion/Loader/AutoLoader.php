@@ -23,6 +23,10 @@ class Autoloader {
 	 * @param string|array $value
 	 */
 	public function registerFromJson($value) {
+		if (!file_exists($value)) {
+			throw new \Exception('File doesn\'t exist');
+		}
+
 		if (is_array($value)) {
 			$this->_namespaces = array_merge($this->_namespaces, $value);
 		}

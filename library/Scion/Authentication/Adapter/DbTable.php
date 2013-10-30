@@ -5,6 +5,7 @@ use Scion\Authentication\Adapter\DbTable\Activation;
 use Scion\Authentication\Adapter\DbTable\Attempt;
 use Scion\Authentication\Adapter\DbTable\Log;
 use Scion\Authentication\Adapter\DbTable\Registration;
+use Scion\Authentication\Adapter\DbTable\Reset;
 use Scion\Authentication\Adapter\DbTable\Session;
 use Scion\Authentication\Adapter\DbTable\User;
 use Scion\Crypt\Hash;
@@ -12,10 +13,11 @@ use Scion\Crypt\Key\Derivation\Pbkdf2;
 use Scion\Db\Pdo;
 use Scion\Db\Provider\AbstractProvider;
 use Scion\Http\Client;
+use Scion\Mvc\GetterSetter;
 use Scion\Mvc\Singleton;
 
 class DbTable implements AdapterInterface {
-	use Singleton;
+	use Singleton, GetterSetter;
 
 	const SITE_KEY = 'dk;l189654è(tyhj§!dfgdfàzgq_f4fá.';
 	const SALT_1   = 'us_1dUDN4N-53/dkf7Sd?vbc_due1d?df!feg';
@@ -29,6 +31,7 @@ class DbTable implements AdapterInterface {
 	private $_user;
 	private $_activation;
 	private $_registration;
+	private $_reset;
 
 	protected function __construct($dbh) {
 		if (!$dbh instanceof AbstractProvider) {
@@ -40,6 +43,7 @@ class DbTable implements AdapterInterface {
 		$this->_session      = new Session($dbh);
 		$this->_activation   = new Activation($dbh);
 		$this->_user         = new User($dbh, $this->_activation);
+		$this->_reset		 = new Reset($dbh);
 	}
 
 	/**

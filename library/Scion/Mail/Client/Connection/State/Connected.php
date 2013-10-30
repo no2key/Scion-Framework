@@ -20,7 +20,7 @@
 
         /**
          * Reads a server reply.
-         * @return Message
+         * @return Message|bool
          */
         public function read()
         {
@@ -33,6 +33,7 @@
                     return $message;
                 }
             }
+			return false;
         }
 
         /**

@@ -71,6 +71,7 @@ abstract class AbstractConnection implements Connection {
 
 			return true;
 		}
+		return false;
 	}
 
 	/**

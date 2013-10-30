@@ -6,10 +6,10 @@ use Scion\Routing\Http\Controller;
 use Scion\Routing\Http\Method;
 use Scion\Routing\Http\Pattern;
 use Scion\Routing\Http\Scheme;
-use Scion\Mvc\Magic;
+use Scion\Mvc\GetterSetter;
 
 class Route {
-	use Magic;
+	use GetterSetter;
 
 	const ANY_KEY     = '__any';
 	const ANY_PATTERN = '(?P<__any>.*)';

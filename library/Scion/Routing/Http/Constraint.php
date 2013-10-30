@@ -1,10 +1,10 @@
 <?php
 namespace Scion\Routing\Http;
 
-use Scion\Mvc\Magic;
+use Scion\Mvc\GetterSetter;
 
 class Constraint {
-	use Magic;
+	use GetterSetter;
 
 	const NULL        = -1;
 	const ANY         = 0;
