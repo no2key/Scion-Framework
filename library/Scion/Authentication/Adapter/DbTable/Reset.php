@@ -1,33 +1,43 @@
 <?php
 namespace Scion\Authentication\Adapter\DbTable;
 
+use Scion\Authentication\Adapter\DbTable;
+use Scion\Crypt\Hash;
+use Scion\Crypt\Key\Derivation\Pbkdf2;
+use Scion\Db\Pdo;
+use Scion\Math\Rand;
+
 class Reset {
 
 	private $_dbh;
+	private $_attempt;
+	private $_log;
 
-	public function __construct($dbh) {
-		$this->_dbh = $dbh;
+	public function __construct($dbh, Attempt $attempt) {
+		$this->_dbh     = $dbh;
+		$this->_attempt = $attempt;
+		$this->_log     = new Log($dbh);
 	}
 
-
 	/**
-	* Creates a reset entry and sends email to user
-	* @param int $uid
-	* @param string $email
-	* @return boolean
-	*/
+	 * Creates a reset entry and sends email to user
+	 * @param int    $uid
+	 * @param string $email
+	 * @return boolean
+	 */
 	private function addReset($uid, $email) {
-		$resetkey = $this->getRandomKey(20);
+		$resetkey = Rand::getBytes(20);
 
-		$query = $this->dbh->prepare("SELECT expiredate FROM " . $this->config->table_resets . " WHERE uid = ?");
-		$query->execute(array($uid));
-		$row = $query->fetch(\PDO::FETCH_ASSOC);
+		$query = $this->_dbh->from('resets')->select(null)->select('expiredate')->where('uid = ?', $uid)->execute();
+		$row   = $query->fetch(\PDO::FETCH_ASSOC);
 
 		if (!$row) {
 			$expiredate = date("Y-m-d H:i:s", strtotime("+1 day"));
 
-			$query  = $this->dbh->prepare("INSERT INTO " . $this->config->table_resets . " (uid, resetkey, expiredate) VALUES (?, ?, ?)");
-			$return = $query->execute(array($uid, $resetkey, $expiredate));
+			$return = $this->_dbh->insertInto('resets', ['uid'       => $uid,
+														'resetkey'   => $resetkey,
+														'expiredate' => $expiredate
+														])->execute();
 
 			/*if ($return) {
 				$emailTemplate = new Localization\Handler(array('base_url' => $this->config->base_url,
@@ -53,8 +63,10 @@ class Reset {
 			}
 			$expiredate = date("Y-m-d H:i:s", strtotime("+1 day"));
 
-			$query  = $this->dbh->prepare("INSERT INTO " . $this->config->table_resets . " (uid, resetkey, expiredate) VALUES (?, ?, ?)");
-			$return = $query->execute(array($uid, $resetkey, $expiredate));
+			$return = $this->_dbh->insertInto('resets', ['uid'       => $uid,
+														'resetkey'   => $resetkey,
+														'expiredate' => $expiredate
+														])->execute();
 
 			/*if ($return) {
 				$emailTemplate = new Localization\Handler(array('base_url' => $this->config->base_url,
@@ -71,26 +83,23 @@ class Reset {
 	}
 
 	/**
-	* Deletes all reset entries for a user
-	* @param int $uid
-	* @return boolean
-	*/
+	 * Deletes all reset entries for a user
+	 * @param int $uid
+	 * @return boolean
+	 */
 	private function deleteUserResets($uid) {
-		$query  = $this->dbh->prepare("DELETE FROM " . $this->config->table_resets . " WHERE uid = ?");
-		$return = $query->execute(array($uid));
-
-		return $return;
+		return $this->_dbh->deleteFrom('resets')->where('uid = ?', $uid)->execute();
 	}
 
 	/**
-	* Checks if a reset key is valid
-	* @param string $key
-	* @return array $return
-	*/
+	 * Checks if a reset key is valid
+	 * @param string $key
+	 * @return array $return
+	 */
 	public function isResetValid($key) {
 		$return = array();
 
-		if ($this->isBlocked()) {
+		if ($this->_attempt->isBlocked()) {
 			$return['code'] = 0;
 
 			return $return;
@@ -98,23 +107,22 @@ class Reset {
 		else {
 			if (strlen($key) > 20) {
 				$return['code'] = 1;
-				$this->addAttempt();
+				$this->_attempt->add();
 
 				return $return;
 			}
 			elseif (strlen($key) < 20) {
 				$return['code'] = 1;
-				$this->addAttempt();
+				$this->_attempt->add();
 
 				return $return;
 			}
 			else {
-				$query = $this->dbh->prepare("SELECT uid, expiredate FROM " . $this->config->table_resets . " WHERE resetkey = ?");
-				$query->execute(array($key));
-				$row = $query->fetch(\PDO::FETCH_ASSOC);
+				$query = $this->_dbh->from('resets')->select(null)->select('uid,expiredate')->where('resetkey = ?', $key)->execute();
+				$row   = $query->fetch(Pdo::FETCH_ASSOC);
 
 				if (!$row) {
-					$this->addAttempt();
+					$this->_attempt->add();
 
 					$return['code'] = 2;
 
@@ -125,7 +133,7 @@ class Reset {
 					$currentdate = strtotime(date("Y-m-d H:i:s"));
 
 					if ($currentdate > $expiredate) {
-						$this->addAttempt();
+						$this->_attempt->add();
 
 						$this->deleteUserResets($row['uid']);
 
@@ -145,15 +153,15 @@ class Reset {
 	}
 
 	/**
-	* After verifying key validity, changes user's password
-	* @param string $key
-	* @param string $password (Must be already twice hashed with SHA1 : Ideally client side with JS)
-	* @return array $return
-	*/
+	 * After verifying key validity, changes user's password
+	 * @param string $key
+	 * @param string $password (Must be already twice hashed with SHA1 : Ideally client side with JS)
+	 * @return array $return
+	 */
 	public function resetPass($key, $password) {
 		$return = array();
 
-		if ($this->isBlocked()) {
+		if ($this->_attempt->isBlocked()) {
 			$return['code'] = 0;
 
 			return $return;
@@ -161,7 +169,7 @@ class Reset {
 		else {
 			if (strlen($password) != 40) {
 				$return['code'] = 1;
-				$this->addAttempt();
+				$this->_attempt->add();
 
 				return $return;
 			}
@@ -169,18 +177,17 @@ class Reset {
 			$data = $this->isResetValid($key);
 
 			if ($data['code'] = 4) {
-				$password = $this->getHash($password);
+				$password = Pbkdf2::create(Hash::ALGO_SHA512, base64_encode(str_rot13(hash(Hash::ALGO_SHA512, str_rot13(DbTable::SALT_1 . $password . DbTable::SALT_2)))), DbTable::SALT_3);
 
-				$query = $this->dbh->prepare("SELECT password FROM " . $this->config->table_users . " WHERE id = ?");
-				$query->execute(array($data['uid']));
-				$row = $query->fetch(\PDO::FETCH_ASSOC);
+				$query = $this->_dbh->from('users')->select(null)->select('password')->where('id = ?', $data['uid'])->execute();
+				$row   = $query->fetch(Pdo::FETCH_ASSOC);
 
 				if (!$row) {
-					$this->addAttempt();
+					$this->_attempt->add();
 
 					$this->deleteUserResets($data['uid']);
 
-					$this->addNewLog($data['uid'], "RESETPASS_FAIL_UID", "User attempted to reset password with key : {$key} -> User doesn't exist !");
+					$this->_log->addNew($data['uid'], "RESETPASS_FAIL_UID", "User attempted to reset password with key : {$key} -> User doesn't exist !");
 
 					$return['code'] = 3;
 
@@ -188,9 +195,9 @@ class Reset {
 				}
 				else {
 					if ($row['password'] == $password) {
-						$this->addAttempt();
+						$this->_attempt->add();
 
-						$this->addNewLog($data['uid'], "RESETPASS_FAIL_SAMEPASS", "User attempted to reset password with key : {$key} -> New password matches previous password !");
+						$this->_log->addNew($data['uid'], "RESETPASS_FAIL_SAMEPASS", "User attempted to reset password with key : {$key} -> New password matches previous password !");
 
 						$this->deleteUserResets($data['uid']);
 
@@ -199,14 +206,13 @@ class Reset {
 						return $return;
 					}
 					else {
-						$query  = $this->dbh->prepare("UPDATE " . $this->config->table_users . " SET password = ? WHERE id = ?");
-						$return = $query->execute(array($password, $data['uid']));
+						$return = $this->_dbh->update('users')->set(['password' => $password])->where('id', $data['uid'])->execute();
 
 						if (!$return) {
 							return false;
 						}
 
-						$this->addNewLog($data['uid'], "RESETPASS_SUCCESS", "User attempted to reset password with key : {$key} -> Password changed, reset keys deleted !");
+						$this->_log->addNew($data['uid'], "RESETPASS_SUCCESS", "User attempted to reset password with key : {$key} -> Password changed, reset keys deleted !");
 
 						$this->deleteUserResets($data['uid']);
 
@@ -217,7 +223,7 @@ class Reset {
 				}
 			}
 			else {
-				$this->addNewLog($data['uid'], "RESETPASS_FAIL_KEY", "User attempted to reset password with key : {$key} -> Key is invalid / incorrect / expired !");
+				$this->_log->addNew($data['uid'], "RESETPASS_FAIL_KEY", "User attempted to reset password with key : {$key} -> Key is invalid / incorrect / expired !");
 
 				$return['code'] = 2;
 
@@ -227,14 +233,14 @@ class Reset {
 	}
 
 	/**
-	* Creates a reset key for an email address and sends email
-	* @param string $email
-	* @return array $return
-	*/
+	 * Creates a reset key for an email address and sends email
+	 * @param string $email
+	 * @return array $return
+	 */
 	public function requestReset($email) {
 		$return = array();
 
-		if ($this->isBlocked()) {
+		if ($this->_attempt->isBlocked()) {
 			$return['code'] = 0;
 
 			return $return;
@@ -242,37 +248,36 @@ class Reset {
 		else {
 			if (strlen($email) == 0) {
 				$return['code'] = 1;
-				$this->addAttempt();
+				$this->_attempt->add();
 
 				return $return;
 			}
 			elseif (strlen($email) > 100) {
 				$return['code'] = 1;
-				$this->addAttempt();
+				$this->_attempt->add();
 
 				return $return;
 			}
 			elseif (strlen($email) < 3) {
 				$return['code'] = 1;
-				$this->addAttempt();
+				$this->_attempt->add();
 
 				return $return;
 			}
 			elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
 				$return['code'] = 1;
-				$this->addAttempt();
+				$this->_attempt->add();
 
 				return $return;
 			}
 			else {
-				$query = $this->dbh->prepare("SELECT id FROM " . $this->config->table_users . " WHERE email = ?");
-				$query->execute(array($email));
-				$row = $query->fetch(\PDO::FETCH_ASSOC);
+				$query = $this->_dbh->from('users')->select(null)->select('id')->where('email = ?', $email)->execute();
+				$row = $query->fetch(Pdo::FETCH_ASSOC);
 
 				if (!$row) {
-					$this->addAttempt();
+					$this->_attempt->add();
 
-					$this->addNewLog("", "REQUESTRESET_FAIL_EMAIL", "User attempted to reset the password for the email : {$email} -> Email doesn't exist in DB");
+					$this->_log->addNew("", "REQUESTRESET_FAIL_EMAIL", "User attempted to reset the password for the email : {$email} -> Email doesn't exist in DB");
 
 					$return['code'] = 2;
 
@@ -280,7 +285,7 @@ class Reset {
 				}
 				else {
 					if ($this->addReset($row['id'], $email)) {
-						$this->addNewLog($row['id'], "REQUESTRESET_SUCCESS", "A reset request was sent to the email : {$email}");
+						$this->_log->addNew($row['id'], "REQUESTRESET_SUCCESS", "A reset request was sent to the email : {$email}");
 
 						$return['code']  = 4;
 						$return['email'] = $email;
@@ -288,9 +293,9 @@ class Reset {
 						return $return;
 					}
 					else {
-						$this->addAttempt();
+						$this->_attempt->add();
 
-						$this->addNewLog($row['id'], "REQUESTRESET_FAIL_EXIST", "User attempted to reset the password for the email : {$email} -> A reset request already exists.");
+						$this->_log->addNew($row['id'], "REQUESTRESET_FAIL_EXIST", "User attempted to reset the password for the email : {$email} -> A reset request already exists.");
 
 						$return['code'] = 3;
 

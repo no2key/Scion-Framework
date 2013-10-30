@@ -25,7 +25,7 @@ class DbTable implements AdapterInterface {
 	const SALT_3   = '63fds.dfhsAdyISs_?&jdUsydbv92bf54ggvc';
 
 	private $_dbh;
-	private $_attempts;
+	private $_attempt;
 	private $_log;
 	private $_session;
 	private $_user;
@@ -37,13 +37,13 @@ class DbTable implements AdapterInterface {
 		if (!$dbh instanceof AbstractProvider) {
 			throw new \Exception('$provider must be a instance of a valid provider (mysql, sqlite, ...)');
 		}
-		$this->_dbh          = $dbh;
-		$this->_attempts     = new Attempt($dbh);
-		$this->_log          = new Log($dbh);
-		$this->_session      = new Session($dbh);
-		$this->_activation   = new Activation($dbh);
-		$this->_user         = new User($dbh, $this->_activation);
-		$this->_reset		 = new Reset($dbh);
+		$this->_dbh        = $dbh;
+		$this->_attempt    = new Attempt($dbh);
+		$this->_log        = new Log($dbh);
+		$this->_session    = new Session($dbh);
+		$this->_activation = new Activation($dbh);
+		$this->_user       = new User($dbh, $this->_activation);
+		$this->_reset      = new Reset($dbh, $this->_attempt);
 	}
 
 	/**
@@ -65,7 +65,7 @@ class DbTable implements AdapterInterface {
 	public function loginProvider($provider, $username, $password) {
 		$return = [];
 
-		if ($this->_attempts->isBlocked()) {
+		if ($this->_attempt->isBlocked()) {
 			$return['code'] = 0;
 
 			return $return;
@@ -73,7 +73,7 @@ class DbTable implements AdapterInterface {
 
 		if (strlen($username) == 0 || strlen($username) > 30 || strlen($username) < 3) {
 			$return['code'] = 1;
-			$this->_attempts->add();
+			$this->_attempt->add();
 
 			return $return;
 		}
@@ -94,7 +94,7 @@ class DbTable implements AdapterInterface {
 						return $return;
 					}
 					else {
-						$this->_attempts->add();
+						$this->_attempt->add();
 
 						$this->_log->addNew($userdata['uid'], "LOGIN_FAIL_NONACTIVE", "Account inactive");
 
@@ -104,7 +104,7 @@ class DbTable implements AdapterInterface {
 					}
 				}
 				else {
-					$this->_attempts->add();
+					$this->_attempt->add();
 
 					$this->_log->addNew($userdata['uid'], "LOGIN_FAIL_PASSWORD", "Password incorrect");
 
@@ -114,7 +114,7 @@ class DbTable implements AdapterInterface {
 				}
 			}
 			else {
-				$this->_attempts->add();
+				$this->_attempt->add();
 
 				$this->_log->addNew(null, "LOGIN_FAIL_USERNAME", "Attempted login with the username : {$username} -> Username doesn't exist in DB");
 
@@ -135,7 +135,7 @@ class DbTable implements AdapterInterface {
 	public function login($username, $password, $rememberme = false) {
 		$return = [];
 
-		if ($this->_attempts->isBlocked()) {
+		if ($this->_attempt->isBlocked()) {
 			$return['code'] = 0;
 
 			return $return;
@@ -143,7 +143,7 @@ class DbTable implements AdapterInterface {
 
 		if (strlen($username) == 0 || strlen($username) > 30 || strlen($username) < 3 || strlen($password) == 0 || strlen($password) != 40) {
 			$return['code'] = 1;
-			$this->_attempts->add();
+			$this->_attempt->add();
 
 			return $return;
 		}
@@ -163,7 +163,7 @@ class DbTable implements AdapterInterface {
 						}
 						else {
 							$return['code'] = 1;
-							$this->_attempts->add();
+							$this->_attempt->add();
 
 							return $return;
 						}
@@ -177,7 +177,7 @@ class DbTable implements AdapterInterface {
 						return $return;
 					}
 					else {
-						$this->_attempts->add();
+						$this->_attempt->add();
 
 						$this->_log->addNew($userdata['uid'], "LOGIN_FAIL_NONACTIVE", "Account inactive");
 
@@ -187,7 +187,7 @@ class DbTable implements AdapterInterface {
 					}
 				}
 				else {
-					$this->_attempts->add();
+					$this->_attempt->add();
 
 					$this->_log->addNew($userdata['uid'], "LOGIN_FAIL_PASSWORD", "Password incorrect : {$plainpass}");
 
@@ -197,7 +197,7 @@ class DbTable implements AdapterInterface {
 				}
 			}
 			else {
-				$this->_attempts->add();
+				$this->_attempt->add();
 
 				$this->_log->addNew(null, "LOGIN_FAIL_USERNAME", "Attempted login with the username : {$username} -> Username doesn't exist in DB");
 
@@ -224,6 +224,7 @@ class DbTable implements AdapterInterface {
 			$this->_log->addNew($return['uid'], 'LOGOUT_SUCCESSFULLY', 'User logged out successfully');
 			unset($_COOKIE['auth_session']);
 			setcookie('auth_session', $hash, time() - 3600, '/', '', false, true);
+
 			return true;
 		}
 
@@ -239,7 +240,7 @@ class DbTable implements AdapterInterface {
 	}
 
 	public function register($email, $username, $password) {
-		$this->_registration = new Registration($this->_dbh, $this->_attempts, $this->_user, $this->_log);
+		$this->_registration = new Registration($this->_dbh, $this->_attempt, $this->_user, $this->_log);
 		$this->_registration->register($email, $username, $password);
 	}
 
@@ -249,7 +250,7 @@ class DbTable implements AdapterInterface {
 	 * @return bool
 	 */
 	private function _checkSession($hash) {
-		if ($this->_attempts->isBlocked()) {
+		if ($this->_attempt->isBlocked()) {
 			return false;
 		}
 
