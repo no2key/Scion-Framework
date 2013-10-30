@@ -112,7 +112,7 @@ class DbTable implements AdapterInterface {
 			else {
 				$this->_attempts->add();
 
-				$this->_log->addNew(Log::UNKNOWN_UID, "LOGIN_FAIL_USERNAME", "Attempted login with the username : {$username} -> Username doesn't exist in DB");
+				$this->_log->addNew(null, "LOGIN_FAIL_USERNAME", "Attempted login with the username : {$username} -> Username doesn't exist in DB");
 
 				$return['code'] = 2;
 
@@ -195,7 +195,7 @@ class DbTable implements AdapterInterface {
 			else {
 				$this->_attempts->add();
 
-				$this->_log->addNew(Log::UNKNOWN_UID, "LOGIN_FAIL_USERNAME", "Attempted login with the username : {$username} -> Username doesn't exist in DB");
+				$this->_log->addNew(null, "LOGIN_FAIL_USERNAME", "Attempted login with the username : {$username} -> Username doesn't exist in DB");
 
 				$return['code'] = 2;
 
@@ -210,19 +210,20 @@ class DbTable implements AdapterInterface {
 	 * @return bool
 	 */
 	public function logout($hash) {
-		if (strlen($hash) != 40) {
+		/*if (strlen($hash) != 40) {
 			return false;
-		}
+		}*/
 
 		$return = $this->_session->deleteFromHash($hash);
 
 		if ($return) {
+			$this->_log->addNew($return['uid'], 'LOGOUT_SUCCESSFULLY', 'User logged out successfully');
 			unset($_COOKIE['auth_session']);
 			setcookie('auth_session', $hash, time() - 3600, '/', '', false, true);
-			$this->_log->addNew($return['uid'], 'LOGOUT_SUCCESSFULLY', 'User logged out successfully');
+			return true;
 		}
 
-		return $return;
+		return false;
 	}
 
 	/**
