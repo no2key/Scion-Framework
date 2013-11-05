@@ -9,12 +9,8 @@
  */
 namespace Scion;
 
-use Scion\Routing\Route;
-use Scion\Db\Database;
-use Scion\File\Json;
 use Scion\Loader\Autoloader;
 use Scion\Loader\RouteLoader;
-use Scion\Views\TemplateEngine;
 
 define('SCION_DIR', __DIR__ . DIRECTORY_SEPARATOR);
 
