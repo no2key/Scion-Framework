@@ -25,6 +25,10 @@ trait Model {
 		return Database::initNoSql($instance);
 	}
 
+	/**
+	 * Get an AuthenticationService object
+	 * @return \Scion\Authentication\AuthenticationService
+	 */
 	final public function getAuth() {
 		return AuthenticationService::getInstance();
 	}
