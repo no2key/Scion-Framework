@@ -1,6 +1,7 @@
 <?php
 namespace Scion\Db\Query;
 
+use Scion\Db\Pdo;
 use Scion\Db\Provider\AbstractProvider;
 
 class Select extends AbstractCommon {
@@ -9,17 +10,18 @@ class Select extends AbstractCommon {
 	private $fromAlias;
 
 	public function __construct(AbstractProvider $fpdo, $from) {
-		$clauses = array(
-			'SELECT'   => ', ',
-			'FROM'     => null,
-			'JOIN'     => array($this, 'getClauseJoin'),
-			'WHERE'    => ' AND ',
-			'GROUP BY' => ',',
-			'HAVING'   => ' AND ',
-			'ORDER BY' => ', ',
-			'LIMIT'    => null,
-			'OFFSET'   => null,
-			"\n--"     => "\n--",
+		$clauses = array('SELECT'   => ', ',
+						 'FROM'     => null,
+						 'JOIN'     => array($this,
+											 'getClauseJoin'
+						 ),
+						 'WHERE'    => ' AND ',
+						 'GROUP BY' => ',',
+						 'HAVING'   => ' AND ',
+						 'ORDER BY' => ', ',
+						 'LIMIT'    => null,
+						 'OFFSET'   => null,
+						 "\n--"     => "\n--",
 		);
 		parent::__construct($fpdo, $clauses);
 
@@ -98,7 +100,7 @@ class Select extends AbstractCommon {
 	 */
 	public function fetchPairs($key, $value, $object = false) {
 		if ($s = $this->select(null)->select("$key, $value")->asObject($object)->execute()) {
-			return $s->fetchAll(PDO::FETCH_KEY_PAIR);
+			return $s->fetchAll(Pdo::FETCH_KEY_PAIR);
 		}
 
 		return false;
@@ -106,16 +108,24 @@ class Select extends AbstractCommon {
 
 	/** Fetch all row
 	 *
-	 * @param string $index       specify index column
-	 * @param string $selectOnly  select columns which could be fetched
+	 * @param int    $fetch_style      specify index column
+	 * @param string $selectOnly select columns which could be fetched
 	 *
 	 * @return array of fetched rows
 	 */
-	public function fetchAll($index = '', $selectOnly = '') {
-		if ($selectOnly) {
-			$this->select(null)->select($index . ', ' . $selectOnly);
+	public function fetchAll($fetch_style = null, $selectOnly = '') {
+		if ($selectOnly != '') {
+			//$this->select(null)->select($index . ', ' . $selectOnly);
+			$this->select(null)->select($selectOnly);
 		}
-		if ($index) {
+
+		if ($s = $this->execute()) {
+			return $s->fetchAll($fetch_style);
+		}
+
+		return false;
+
+		/*if ($index != '') {
 			$data = array();
 			foreach ($this as $row) {
 				if (is_object($row)) {
@@ -134,6 +144,6 @@ class Select extends AbstractCommon {
 			}
 
 			return false;
-		}
+		}*/
 	}
 }
