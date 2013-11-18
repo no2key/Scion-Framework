@@ -166,14 +166,14 @@ abstract class AbstractBase implements \IteratorAggregate {
 	}
 
 	/**
-	 * @return \PDO
+	 * @return \Scion\Db\Pdo
 	 */
 	protected function getPDO() {
 		return $this->fpdo->getPdo();
 	}
 
 	/**
-	 * @return \FluentStructure
+	 * @return Structure
 	 */
 	protected function getStructure() {
 		return $this->fpdo->getStructure();
