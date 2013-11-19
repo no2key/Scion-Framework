@@ -179,7 +179,7 @@ class Reset {
 			if ($data['code'] = 4) {
 				$password = Pbkdf2::create(Hash::ALGO_SHA512, base64_encode(str_rot13(hash(Hash::ALGO_SHA512, str_rot13(DbTable::SALT_1 . $password . DbTable::SALT_2)))), DbTable::SALT_3);
 
-				$query = $this->_dbh->from('users')->select(null)->select('password')->where('id = ?', $data['uid'])->execute();
+				$query = $this->_dbh->from('users')->select(null)->select('password')->where('user_id = ?', $data['uid'])->execute();
 				$row   = $query->fetch(Pdo::FETCH_ASSOC);
 
 				if (!$row) {
@@ -206,7 +206,7 @@ class Reset {
 						return $return;
 					}
 					else {
-						$return = $this->_dbh->update('users')->set(['password' => $password])->where('id', $data['uid'])->execute();
+						$return = $this->_dbh->update('users')->set(['password' => $password])->where('user_id', $data['uid'])->execute();
 
 						if (!$return) {
 							return false;
@@ -271,7 +271,7 @@ class Reset {
 				return $return;
 			}
 			else {
-				$query = $this->_dbh->from('users')->select(null)->select('id')->where('email = ?', $email)->execute();
+				$query = $this->_dbh->from('users')->select(null)->select('user_id')->where('email = ?', $email)->execute();
 				$row = $query->fetch(Pdo::FETCH_ASSOC);
 
 				if (!$row) {
@@ -284,8 +284,8 @@ class Reset {
 					return $return;
 				}
 				else {
-					if ($this->addReset($row['id'], $email)) {
-						$this->_log->addNew($row['id'], "REQUESTRESET_SUCCESS", "A reset request was sent to the email : {$email}");
+					if ($this->addReset($row['user_id'], $email)) {
+						$this->_log->addNew($row['user_id'], "REQUESTRESET_SUCCESS", "A reset request was sent to the email : {$email}");
 
 						$return['code']  = 4;
 						$return['email'] = $email;
@@ -295,7 +295,7 @@ class Reset {
 					else {
 						$this->_attempt->add();
 
-						$this->_log->addNew($row['id'], "REQUESTRESET_FAIL_EXIST", "User attempted to reset the password for the email : {$email} -> A reset request already exists.");
+						$this->_log->addNew($row['user_id'], "REQUESTRESET_FAIL_EXIST", "User attempted to reset the password for the email : {$email} -> A reset request already exists.");
 
 						$return['code'] = 3;
 

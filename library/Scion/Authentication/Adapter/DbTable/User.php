@@ -21,7 +21,7 @@ class User {
 	 * @return array|bool
 	 */
 	public function getUserData($username) {
-		$data = $this->_dbh->from('users')->select(null)->select('id, password, email, salt, lang, isactive, joined')->where('username = ?', $username)->execute()->fetch(Pdo::FETCH_ASSOC);
+		$data = $this->_dbh->from('users')->select(null)->select('user_id, password, email, salt, lang, isactive, joined')->where('username = ?', $username)->execute()->fetch(Pdo::FETCH_ASSOC);
 
 		if ($data) {
 			$data['username'] = $username;
@@ -42,7 +42,7 @@ class User {
 		$row = $this->_dbh->from('sessions')->select(null)->select('uid')->where('hash = ?', $hash)->execute()->fetch(Pdo::FETCH_ASSOC);
 
 		if ($row) {
-			$row = $this->_dbh->from('users')->select(null)->select('username')->where('id = ?', $row['uid'])->execute()->fetch(Pdo::FETCH_ASSOC);
+			$row = $this->_dbh->from('users')->select(null)->select('username')->where('user_id = ?', $row['uid'])->execute()->fetch(Pdo::FETCH_ASSOC);
 			if ($row) {
 				return $row['username'];
 			}
@@ -98,9 +98,9 @@ class User {
 		$this->_dbh->insertInto('users', ['username' => $username, 'password' => $password, 'email' => $email, 'salt' => $salt, 'lang' => $lang, 'joined' => (new DateTime())->now(DateTime::MYSQL_DATETIME)])->execute();
 		$user = $this->getUserData($username);
 
-		$this->_activation->add($user['id'], $email);
+		$this->_activation->add($user['user_id'], $email);
 
-		return $user['id'];
+		return $user['user_id'];
 	}
 
 	/**

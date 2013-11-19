@@ -20,7 +20,7 @@ class Session {
 	 * @return array $data
 	 */
 	public function add($uid, $expire) {
-		$data         = $this->_dbh->from('users')->select(null)->select('salt, lang')->where('id = ?', $uid)->execute()->fetch(Pdo::FETCH_ASSOC);
+		$data         = $this->_dbh->from('users')->select(null)->select('salt, lang')->where('user_id = ?', $uid)->execute()->fetch(Pdo::FETCH_ASSOC);
 		$data['hash'] = sha1($data['salt'] . microtime());
 
 		$agent = $_SERVER['HTTP_USER_AGENT'];

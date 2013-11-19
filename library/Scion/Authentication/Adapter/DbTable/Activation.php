@@ -163,7 +163,7 @@ class Activation {
 	* @return boolean
 	*/
 	private function _isUserActivated($uid) {
-		$row = $this->_dbh->from('users')->select(null)->select('isactive')->where('id', $uid)->execute()->fetch(Pdo::FETCH_ASSOC);
+		$row = $this->_dbh->from('users')->select(null)->select('isactive')->where('user_id', $uid)->execute()->fetch(Pdo::FETCH_ASSOC);
 
 		if (!$row || $row['isactive'] == 0) {
 			return false;
