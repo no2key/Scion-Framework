@@ -3,6 +3,8 @@ namespace Scion\Db\Provider;
 
 class Sqlite extends AbstractProvider {
 
+	protected $timeFunc = 'datetime(current_timestamp)';
+
 	/**
 	 * @see AbstractProvider\getDsn()
 	 * @return string
