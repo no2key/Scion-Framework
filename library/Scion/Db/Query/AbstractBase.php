@@ -1,19 +1,19 @@
 <?php
 namespace Scion\Db\Query;
 
-use Scion\Date\DateTime;
+use Scion\Stdlib\DateTime;
 use Scion\Db\Pdo;
 use Scion\Db\Provider\AbstractProvider;
 
 abstract class AbstractBase implements \IteratorAggregate {
 
 	/** @var FluentPDO */
-	private $fpdo;
+	private $dbh;
 
 	/** @var array of definition clauses */
 	protected $clauses = array();
 
-	/** @var PDOStatement */
+	/** @var \PDOStatement */
 	private $result;
 
 	/** @var float */
@@ -24,8 +24,8 @@ abstract class AbstractBase implements \IteratorAggregate {
 
 	protected $statements = array(), $parameters = array();
 
-	protected function __construct(AbstractProvider $fpdo, $clauses) {
-		$this->fpdo    = $fpdo;
+	protected function __construct(AbstractProvider $dbh, $clauses) {
+		$this->fpdo    = $dbh;
 		$this->clauses = $clauses;
 		$this->initClauses();
 	}
@@ -50,7 +50,7 @@ abstract class AbstractBase implements \IteratorAggregate {
 	 * @param       $statement
 	 * @param array $parameters
 	 *
-	 * @return $this|SelectQuery
+	 * @return $this|Select
 	 */
 	protected function addStatement($clause, $statement, $parameters = array()) {
 		if ($statement === null) {
@@ -87,7 +87,7 @@ abstract class AbstractBase implements \IteratorAggregate {
 
 	/** Implements method from IteratorAggregate
 	 *
-	 * @return PDOStatement
+	 * @return \PDOStatement
 	 */
 	public function getIterator() {
 		return $this->execute();
@@ -95,7 +95,7 @@ abstract class AbstractBase implements \IteratorAggregate {
 
 	/** Execute query with earlier added parameters
 	 *
-	 * @return PDOStatement
+	 * @return \PDOStatement
 	 */
 	public function execute() {
 		$query      = $this->buildQuery();

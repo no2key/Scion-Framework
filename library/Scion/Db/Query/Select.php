@@ -9,21 +9,22 @@ class Select extends AbstractCommon {
 	private $fromTable;
 	private $fromAlias;
 
-	public function __construct(AbstractProvider $fpdo, $from) {
-		$clauses = array('SELECT'   => ', ',
-						 'FROM'     => null,
-						 'JOIN'     => array($this,
-											 'getClauseJoin'
-						 ),
-						 'WHERE'    => ' AND ',
-						 'GROUP BY' => ',',
-						 'HAVING'   => ' AND ',
-						 'ORDER BY' => ', ',
-						 'LIMIT'    => null,
-						 'OFFSET'   => null,
-						 "\n--"     => "\n--",
+	public function __construct(AbstractProvider $dbh, $from) {
+		$clauses = array('SELECT'          => ', ',
+						 'SELECT DISTINCT' => ', ',
+						 'FROM'            => null,
+						 'JOIN'            => [$this,
+											   'getClauseJoin'
+						 ],
+						 'WHERE'           => ' AND ',
+						 'GROUP BY'        => ',',
+						 'HAVING'          => ' AND ',
+						 'ORDER BY'        => ', ',
+						 'LIMIT'           => null,
+						 'OFFSET'          => null,
+						 "\n--"            => "\n--",
 		);
-		parent::__construct($fpdo, $clauses);
+		parent::__construct($dbh, $clauses);
 
 		# initialize statements
 		$fromParts       = explode(' ', $from);
@@ -108,8 +109,8 @@ class Select extends AbstractCommon {
 
 	/** Fetch all row
 	 *
-	 * @param int    $fetch_style      specify index column
-	 * @param string $selectOnly select columns which could be fetched
+	 * @param int    $fetch_style specify index column
+	 * @param string $selectOnly  select columns which could be fetched
 	 *
 	 * @return array of fetched rows
 	 */
