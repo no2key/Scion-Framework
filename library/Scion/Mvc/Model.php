@@ -4,6 +4,7 @@ namespace Scion\Mvc;
 use Scion\Authentication\Auth;
 use Scion\Authentication\AuthenticationService;
 use Scion\Db\Database;
+use Scion\Permissions\Rbac\Rbac;
 
 trait Model {
 
@@ -31,5 +32,14 @@ trait Model {
 	 */
 	final public function getAuth() {
 		return AuthenticationService::getInstance();
+	}
+
+	/**
+	 * Get a Rbac object
+	 * @param string $name
+	 * @return \Scion\Permissions\Rbac\Rbac
+	 */
+	final public function getRbac($name = 'default') {
+		return new Rbac($name);
 	}
 }
