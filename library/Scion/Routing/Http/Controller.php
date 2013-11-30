@@ -43,7 +43,18 @@ class Controller {
 		 * Check current controller class use specific Trait
 		 * Check also if the parent controller class use specific Trait
 		 */
-		if (!in_array('Scion\Mvc\Controller', $controllerClass->getTraitNames()) || !in_array('Scion\Mvc\Controller', $controllerClass->getParentClass()->getTraitNames())) {
+		$traitsNames = [];
+		$recursiveClasses = function ($class) use(&$recursiveClasses, &$traitsNames) {
+			if ($class->getParentClass() != false) {
+				$recursiveClasses($class->getParentClass());
+			}
+			else {
+				$traitsNames = array_merge($traitsNames, $class->getTraitNames());
+			}
+		};
+		$recursiveClasses($controllerClass);
+
+		if (!in_array('Scion\Mvc\Controller', $traitsNames)) {
 			throw new \Exception('A controller must use the next valid Trait: "Scion\Mvc\Controller"');
 		}
 
