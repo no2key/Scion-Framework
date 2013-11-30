@@ -39,8 +39,11 @@ class Controller {
 		// Create a ReflectionClass
 		$controllerClass = new \ReflectionClass($this->_calledClass);
 
-		// Check controller class use specific Trait
-		if (!in_array('Scion\Mvc\Controller', $controllerClass->getTraitNames())) {
+		/**
+		 * Check current controller class use specific Trait
+		 * Check also if the parent controller class use specific Trait
+		 */
+		if (!in_array('Scion\Mvc\Controller', $controllerClass->getTraitNames()) || !in_array('Scion\Mvc\Controller', $controllerClass->getParentClass()->getTraitNames())) {
 			throw new \Exception('A controller must use the next valid Trait: "Scion\Mvc\Controller"');
 		}
 
