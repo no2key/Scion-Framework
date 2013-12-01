@@ -12,6 +12,7 @@ class Controller {
 	private $_beginContent;
 	private $_methodContent;
 	private $_endContent;
+	private $_traitNames = [];
 
 	/**
 	 * Constructor
@@ -39,23 +40,15 @@ class Controller {
 		// Create a ReflectionClass
 		$controllerClass = new \ReflectionClass($this->_calledClass);
 
-		/**
-		 * Check current controller class use specific Trait
-		 * Check also if the parent controller class use specific Trait
-		 */
-		$traitsNames = [];
-		$recursiveClasses = function ($class) use(&$recursiveClasses, &$traitsNames) {
-			if ($class->getParentClass() != false) {
-				$recursiveClasses($class->getParentClass());
-			}
-			else {
-				$traitsNames = array_merge($traitsNames, $class->getTraitNames());
-			}
-		};
-		$recursiveClasses($controllerClass);
-
-		if (!in_array('Scion\Mvc\Controller', $traitsNames)) {
+		// Check current controller class use specific Trait.
+		// Check also if the parent controller class use specific Trait
+		if (!in_array('Scion\Mvc\Controller', $this->_traitNames)) {
 			throw new \Exception('A controller must use the next valid Trait: "Scion\Mvc\Controller"');
+		}
+
+		// Check if the controller class use the Model trait
+		if (in_array('Scion\Mvc\Model', $this->_traitNames)) {
+			throw new \Exception('A controller cannot use the "Scion\Mvc\Model" trait');
 		}
 
 		// Create instance of the controller
@@ -97,10 +90,25 @@ class Controller {
 		 * Replace ":" by "\"
 		 * Get class name
 		 * Get method name, suffix with "Action"
+		 * Get trait names from current and parents classes
 		 */
 		$controller          = str_replace(':', '\\', $this->_calledController);
 		$lastSpacePosition   = strrpos($controller, '\\');
 		$this->_calledClass  = substr($controller, 0, $lastSpacePosition);
 		$this->_calledMethod = substr($controller, strrpos($controller, '\\') + 1) . 'Action';
+		$this->_getTraitNames(new \ReflectionClass($this->_calledClass));
+	}
+
+	/**
+	 * Get all trait names from the current and parents classes
+	 * @param $class
+	 * @return array
+	 */
+	private function _getTraitNames($class) {
+		if ($class->getParentClass() != false) {
+			$this->_getTraitNames($class->getParentClass());
+		}
+
+		$this->_traitNames = array_merge($this->_traitNames, $class->getTraitNames());
 	}
 }
