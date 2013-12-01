@@ -32,6 +32,6 @@ class Pattern {
 	 */
 	public function wildcard($cpLen) {
 		$this->_additionalParameters = true;
-		$this->_pattern = substr($this->_pattern, 0, $cpLen > 2 && $this->_pattern[$cpLen - 2] == '/' ? -2 : -1);
+		$this->_pattern = substr($this->_pattern, 0, $cpLen > 2 && $this->_pattern[$cpLen - 2] == '/' ? -1 : -1);
 	}
 }
