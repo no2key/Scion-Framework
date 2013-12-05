@@ -76,12 +76,28 @@ class Router {
 		}
 		$route = $this->hashedRoutes[$routeName];
 
-		if ($this->_request->isModeRewriteActive() === false) {
-			$this->_request->getPath();
-			return $this->_request->getBaseIndex() . $route->generate($params);
+		$generatedPath = $route->generate($params);
+
+		/**
+		 * Check if the pattern result is an external url (http or https)
+		 */
+		if (filter_var($generatedPath, FILTER_VALIDATE_URL)) {
+			return $generatedPath;
 		}
 
-		return $this->_request->getRelativeUrlRoot() . $route->generate($params);
+		/**
+		 * Return a basic url if mode rewrite is not activated
+		 */
+		if ($this->_request->isModeRewriteActive() === false) {
+			$this->_request->getPath();
+			return $this->_request->getBaseIndex() . $generatedPath;
+		}
+
+		/**
+		 * Otherwise, return a fully mode rewrite complete url
+		 */
+
+		return $this->_request->getRelativeUrlRoot() . $generatedPath;
 	}
 
 	/**
