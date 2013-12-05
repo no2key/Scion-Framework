@@ -25,8 +25,8 @@ function functionUrl(Core $core, $name, $array = []) {
 		return RouteLoader::getRouter()->generate($name, $params);
 	}
 	catch (\Exception $e) {
-		var_dump($e);
+		//var_dump($e);
 	}
 
-	return;
+	return null;
 }
