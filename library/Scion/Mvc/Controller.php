@@ -9,23 +9,15 @@ use Scion\Mvc\Controller\Plugin\Redirect;
 use Scion\Views\TemplateEngine;
 
 trait Controller {
-
-	/**
-	 * Get service object
-	 * @param $id
-	 * @return mixed
-	 */
-	final public function get($id) {
-		return $this->__getService($id, func_get_args());
-	}
+	use ModelController;
 
 	/**
 	 * Call service and return object
 	 * @param string $service
 	 * @param array  $parameters
-	 * @return mixed|null|object|Form|Request|Redirect|Singleton|string
+	 * @return mixed
 	 */
-	private function __getService($service, $parameters = []) {
+	protected function __getService($service, $parameters = []) {
 		switch ($service) {
 			/**
 			 * Get class name using this controller trait
