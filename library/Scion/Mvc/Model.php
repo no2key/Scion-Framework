@@ -11,6 +11,14 @@ trait Model {
 	protected function __getService($service, $parameters = []) {
 		switch ($service) {
 			/**
+			 * Get class name using this controller trait
+			 * @return string
+			 */
+			case 'class':
+				return __CLASS__;
+				break;
+
+			/**
 			 * Get SQL provider (mysql, sqlite, ...) object
 			 * @return \Scion\Db\Sql
 			 */
