@@ -21,6 +21,7 @@ class Autoloader {
 	/**
 	 * Register new namespaces from a Json file
 	 * @param string|array $value
+	 * @throws \Exception
 	 */
 	public function registerFromJson($value) {
 		if (!file_exists($value)) {
@@ -58,7 +59,8 @@ class Autoloader {
 				$trimmedClass = substr($className, strlen($namespace));
 				$filename     = self::_transformClassNameToFilename($trimmedClass, $includePath);
 				if (file_exists($filename) && !class_exists($className)) {
-					require $filename;
+					//require $filename; todo this is the right way to call a file
+					require_once $filename; //todo, replace for test to dwoo
 				}
 			}
 		}
