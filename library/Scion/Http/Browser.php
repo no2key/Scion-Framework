@@ -16,6 +16,7 @@ class Browser {
 	protected $isRobot = false;
 	protected $isDesktop = false;
 	protected $isTv = false;
+	protected $isFacebook = false;
 
 	/**
 	 * Protected constructor manage by Singleton
@@ -503,11 +504,10 @@ class Browser {
 									   ), "MSIE", $this->agent);
 		} // Test for Pocket IE
 		else if (stripos($this->agent, 'mspie') !== false || stripos($this->agent, 'pocket') !== false) {
-			$result = explode(' ', stristr($this->agent, 'mspie'));
-			$this->setPlatform(AbstractHttp::PLATFORM_WINDOWS_CE);
-			$this->name       = AbstractHttp::BROWSER_POCKET_IE;
+			$result          = explode(' ', stristr($this->agent, 'mspie'));
+			$this->name      = AbstractHttp::BROWSER_POCKET_IE;
 			$this->isDesktop = false;
-			$this->isMobile   = true;
+			$this->isMobile = true;
 
 			if (stripos($this->agent, 'mspie') !== false) {
 				$this->setVersion($result[1]);
@@ -942,9 +942,56 @@ class Browser {
 	 */
 	protected function checkFacebookExternalHit() {
 		if (stristr($this->agent, 'FacebookExternalHit')) {
-			$this->isDesktop = false;
+			$this->isDesktop  = false;
 			$this->isRobot    = true;
-			$this->setFacebook(true);
+			$this->isFacebook = true;
+
+			return true;
+		}
+
+		return false;
+	}
+
+	/**
+	 * Detect if URL is being loaded from internal Facebook browser
+	 * @return boolean True if it detects internal Facebook browser otherwise false
+	 */
+	protected function checkForFacebookIos() {
+		if (stristr($this->agent, 'FBIOS')) {
+			$this->isFacebook = true;
+
+			return true;
+		}
+
+		return false;
+	}
+
+	/**
+	 * Detect Version for the Chrome browser on iOS devices
+	 * @return boolean True if it detects the version correctly otherwise false
+	 */
+	protected function getChromeVersionOnIos() {
+		$result = explode('/', stristr($this->agent, 'CriOS'));
+		if (isset($result[1])) {
+			$version = explode(' ', $result[1]);
+			$this->setVersion($version[0]);
+			$this->name = AbstractHttp::BROWSER_CHROME;
+
+			return true;
+		}
+
+		return false;
+	}
+
+	/**
+	 * Detect Version for the Safari browser on iOS devices
+	 * @return bool
+	 */
+	protected function getSafariVersionOnIos() {
+		$result = explode('/', stristr($this->agent, 'Version'));
+		if (isset($result[1])) {
+			$version = explode(' ', $result[1]);
+			$this->setVersion($version[0]);
 
 			return true;
 		}
