@@ -10,8 +10,12 @@ class Server {
 	const SERVER_SOFTWARE_LITESPEED           = 'LiteSpeed';
 	const SERVER_SOFTWARE_NGINX               = 'nginx';
 
-	private $_serverSoftware = '';
+	private $_serverName = '';
+	private $_serverVersion = 0.0;
 
+	/**
+	 * Constructor, detect server software
+	 */
 	public function __construct() {
 		$this->_detectServerSoftware();
 	}
@@ -21,7 +25,15 @@ class Server {
 	 * @return string
 	 */
 	public function getServerSoftwareName() {
-		return $this->_serverSoftware;
+		return $this->_serverName;
+	}
+
+	/**
+	 * Get the version of the server software
+	 * @return float
+	 */
+	public function getServerSoftwareVersion() {
+		return $this->_serverVersion;
 	}
 
 	/**
@@ -37,22 +49,23 @@ class Server {
 	 */
 	private function _detectServerSoftware() {
 		if (strpos($_SERVER['SERVER_SOFTWARE'], self::SERVER_SOFTWARE_APACHE) !== false) {
-			$this->_serverSoftware = self::SERVER_SOFTWARE_APACHE;
+			$this->_serverName    = self::SERVER_SOFTWARE_APACHE;
+			$this->_serverVersion = explode(' ', explode("/", $_SERVER['SERVER_SOFTWARE'])[1])[0];
 		}
 		else if (strpos($_SERVER['SERVER_SOFTWARE'], self::SERVER_SOFTWARE_IIS) !== false) {
-			$this->_serverSoftware = self::SERVER_SOFTWARE_IIS;
+			$this->_serverName = self::SERVER_SOFTWARE_IIS;
 		}
 		else if (strpos($_SERVER['SERVER_SOFTWARE'], self::SERVER_SOFTWARE_EXPRESSIONDEVSERVER) !== false) {
-			$this->_serverSoftware = self::SERVER_SOFTWARE_EXPRESSIONDEVSERVER;
+			$this->_serverName = self::SERVER_SOFTWARE_EXPRESSIONDEVSERVER;
 		}
 		else if (strpos($_SERVER['SERVER_SOFTWARE'], self::SERVER_SOFTWARE_LIGHTTPD) !== false) {
-			$this->_serverSoftware = self::SERVER_SOFTWARE_LIGHTTPD;
+			$this->_serverName = self::SERVER_SOFTWARE_LIGHTTPD;
 		}
 		else if (strpos($_SERVER['SERVER_SOFTWARE'], self::SERVER_SOFTWARE_LITESPEED) !== false) {
-			$this->_serverSoftware = self::SERVER_SOFTWARE_LITESPEED;
+			$this->_serverName = self::SERVER_SOFTWARE_LITESPEED;
 		}
 		else if (strpos($_SERVER['SERVER_SOFTWARE'], self::SERVER_SOFTWARE_NGINX) !== false) {
-			$this->_serverSoftware = self::SERVER_SOFTWARE_NGINX;
+			$this->_serverName = self::SERVER_SOFTWARE_NGINX;
 		}
 	}
 }
