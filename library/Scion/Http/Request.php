@@ -21,7 +21,6 @@ class Request {
 	private $_secureUrlPrefix;
 	private $_normalUrlPrefix;
 
-
 	/**
 	 * Constructor
 	 * Get the requested method
@@ -80,7 +79,7 @@ class Request {
 	 * @return string
 	 */
 	public function findRelativeUrlRoot() {
-		$scriptName = ! empty($_SERVER['SCRIPT_NAME']) ? $_SERVER['SCRIPT_NAME'] : $_SERVER['ORIG_SCRIPT_NAME'];
+		$scriptName = !empty($_SERVER['SCRIPT_NAME']) ? $_SERVER['SCRIPT_NAME'] : $_SERVER['ORIG_SCRIPT_NAME'];
 
 		return rtrim(dirname($scriptName), '/\\');
 	}
@@ -115,7 +114,7 @@ class Request {
 	 * @return string
 	 */
 	public function getPath() {
-		if (! isset($_SERVER['REQUEST_URI'])) {
+		if (!isset($_SERVER['REQUEST_URI'])) {
 			return '';
 		}
 		$url = $_SERVER['REQUEST_URI'];
@@ -193,14 +192,13 @@ class Request {
 		}
 		$hostParam = explode(':', $_SERVER['HTTP_HOST']);
 		if (count($hostParam) == 1) {
-			$hostParam[] = isset($_SERVER['SERVER_PORT']) ?
-				$_SERVER['SERVER_PORT'] : $standardPort;
+			$hostParam[] = isset($_SERVER['SERVER_PORT']) ? $_SERVER['SERVER_PORT'] : $standardPort;
 		}
 		if ($hostParam[1] == $standardPort) {
 			unset($hostParam[1]);
 		}
 
-		if (! $isSecure) {
+		if (!$isSecure) {
 			$this->_normalUrlPrefix = $prefix . join(':', $hostParam);
 
 			return $this->_normalUrlPrefix;
@@ -222,7 +220,7 @@ class Request {
 	public function getVar($name, $defaultValue = null, $method = null) {
 		$rv = $this->getValue($name, $method);
 
-		return ! is_null($rv) ? $rv : $defaultValue;
+		return !is_null($rv) ? $rv : $defaultValue;
 	}
 
 	/**
@@ -235,7 +233,7 @@ class Request {
 	public function getInt($name, $defaultValue = 0, $method = null) {
 		$rv = $this->getValue($name, $method);
 
-		return ! is_null($rv) ? intval($rv) : $defaultValue;
+		return !is_null($rv) ? intval($rv) : $defaultValue;
 	}
 
 	/**
@@ -248,7 +246,7 @@ class Request {
 	public function getFloat($name, $defaultValue = 0, $method = null) {
 		$rv = $this->getValue($name, $method);
 
-		return ! is_null($rv) ? doubleval($rv) : $defaultValue;
+		return !is_null($rv) ? doubleval($rv) : $defaultValue;
 	}
 
 	/**
@@ -297,7 +295,7 @@ class Request {
 	public function getArray($name, $defaultValue = false, $method = null) {
 		$value = $this->getValue($name, $method);
 
-		return ! is_null($value) && is_array($value) ? $value : $defaultValue;
+		return !is_null($value) && is_array($value) ? $value : $defaultValue;
 	}
 
 	/**
@@ -306,13 +304,13 @@ class Request {
 	 * @return array
 	 */
 	public function getFiles($key) {
-		if (! $this->_fixedFilesArray && count($_FILES)) {
+		if (!$this->_fixedFilesArray && count($_FILES)) {
 			foreach ($_FILES as $key => $val) {
 				$tmp = array();
 				foreach ($val as $pFieldName => $pFieldValue) {
 					if (is_array($pFieldValue)) {
 						foreach ($pFieldValue as $fieldName => $fieldValue) {
-							if (! isset($tmp[$fieldName])) {
+							if (!isset($tmp[$fieldName])) {
 								$tmp[$fieldName] = array();
 							}
 							$tmp[$fieldName][$pFieldName] = $fieldValue;
