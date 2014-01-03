@@ -307,7 +307,7 @@ class Headers {
 			 * Get a Platform object
 			 */
 			case 'platform':
-				return Platform::getInstance();
+				return Platform::getInstance($this);
 				break;
 
 			default:
