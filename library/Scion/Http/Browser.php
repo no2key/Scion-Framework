@@ -4,13 +4,12 @@ namespace Scion\Http;
 use Scion\Mvc\GetterSetter;
 use Scion\Mvc\Singleton;
 
-class Browser {
+class Browser extends AbstractHttp {
 	use Singleton, GetterSetter;
 
-	protected $name = AbstractHttp::BROWSER_UNKNOWN;
-	protected $version = AbstractHttp::VERSION_UNKNOWN;
-	protected $engine = AbstractHttp::ENGINE_UNKNOWN;
-	protected $agent = null;
+	protected $name = self::BROWSER_UNKNOWN;
+	protected $version = self::VERSION_UNKNOWN;
+	protected $engine = self::ENGINE_UNKNOWN;
 	protected $isMobile = false;
 	protected $isTablet = false;
 	protected $isRobot = false;
@@ -20,6 +19,7 @@ class Browser {
 
 	/**
 	 * Protected constructor manage by Singleton
+	 * @param Headers $headers
 	 */
 	protected function __construct(Headers $headers) {
 		$this->agent = $headers->get('userAgent')->get();
@@ -31,8 +31,8 @@ class Browser {
 	 * Reset all properties
 	 */
 	public function reset() {
-		$this->name       = AbstractHttp::BROWSER_UNKNOWN;
-		$this->version    = AbstractHttp::VERSION_UNKNOWN;
+		$this->name       = self::BROWSER_UNKNOWN;
+		$this->version    = self::VERSION_UNKNOWN;
 		$this->isDesktop  = true;
 		$this->isMobile   = false;
 		$this->isTablet   = false;
@@ -94,16 +94,16 @@ class Browser {
 	 */
 	public function getBrowserType() {
 		if ($this->isDesktop) {
-			return AbstractHttp::BROWSER_IS_DESKTOP;
+			return self::BROWSER_IS_DESKTOP;
 		}
 		else if ($this->isMobile || $this->isTablet) {
-			return AbstractHttp::BROWSER_IS_MOBILE;
+			return self::BROWSER_IS_MOBILE;
 		}
 		else if ($this->isTv) {
-			return AbstractHttp::BROWSER_IS_TV;
+			return self::BROWSER_IS_TV;
 		}
 		else if ($this->isRobot) {
-			return AbstractHttp::BROWSER_IS_BOT;
+			return self::BROWSER_IS_BOT;
 		}
 		return '';
 	}
@@ -205,7 +205,7 @@ class Browser {
 			$result  = explode('/', stristr($this->agent, 'Amaya'));
 			$version = explode(' ', $result[1]);
 			$this->setVersion($version[0]);
-			$this->name = AbstractHttp::BROWSER_AMAYA;
+			$this->name = self::BROWSER_AMAYA;
 
 			return true;
 		}
@@ -225,7 +225,7 @@ class Browser {
 				$this->setVersion($aversion[0]);
 			}
 			else {
-				$this->setVersion(AbstractHttp::VERSION_UNKNOWN);
+				$this->setVersion(self::VERSION_UNKNOWN);
 			}
 
 			$this->isDesktop = false;
@@ -235,7 +235,7 @@ class Browser {
 			else {
 				$this->isTablet = true;
 			}
-			$this->name = AbstractHttp::BROWSER_ANDROID;
+			$this->name = self::BROWSER_ANDROID;
 
 			return true;
 		}
@@ -252,7 +252,7 @@ class Browser {
 			$result  = explode("/", stristr($this->agent, "bingbot"));
 			$version = explode(" ", $result[1]);
 			$this->setVersion(str_replace(";", "", $version[0]));
-			$this->name       = AbstractHttp::BROWSER_BINGBOT;
+			$this->name       = self::BROWSER_BINGBOT;
 			$this->isDesktop = false;
 			$this->isRobot    = true;
 
@@ -271,7 +271,7 @@ class Browser {
 			$result  = explode("/", stristr($this->agent, "BlackBerry"));
 			$version = explode(' ', $result[1]);
 			$this->setVersion($version[0]);
-			$this->name       = AbstractHttp::BROWSER_BLACKBERRY;
+			$this->name       = self::BROWSER_BLACKBERRY;
 			$this->isDesktop = false;
 			$this->isMobile   = true;
 
@@ -290,7 +290,7 @@ class Browser {
 			$result  = explode('/', stristr($this->agent, 'Chrome'));
 			$version = explode(' ', $result[1]);
 			$this->setVersion($version[0]);
-			$this->name = AbstractHttp::BROWSER_CHROME;
+			$this->name = self::BROWSER_CHROME;
 
 			//Chrome on Android
 			if (stripos($this->agent, 'Android') !== false) {
@@ -317,7 +317,7 @@ class Browser {
 		if (stripos($this->agent, 'Firebird') !== false) {
 			$version = explode('/', stristr($this->agent, 'Firebird'));
 			$this->setVersion($version[1]);
-			$this->name = AbstractHttp::BROWSER_FIREBIRD;
+			$this->name = self::BROWSER_FIREBIRD;
 
 			return true;
 		}
@@ -334,7 +334,7 @@ class Browser {
 
 			if (preg_match("/Firefox[\/ \(]([^ ;\)]+)/i", $this->agent, $matches)) {
 				$this->setVersion($matches[1]);
-				$this->name = AbstractHttp::BROWSER_FIREFOX;
+				$this->name = self::BROWSER_FIREFOX;
 				//Firefox on Android
 				if (stripos($this->agent, 'Android') !== false) {
 					$this->isDesktop = false;
@@ -349,7 +349,7 @@ class Browser {
 				return true;
 			}
 			else if (preg_match("/Firefox$/i", $this->agent, $matches)) {
-				$this->name = AbstractHttp::BROWSER_FIREFOX;
+				$this->name = self::BROWSER_FIREFOX;
 
 				return true;
 			}
@@ -360,7 +360,7 @@ class Browser {
 					$version = explode(' ', $result[1]);
 					$this->setVersion($version[0]);
 				}
-				$this->name = AbstractHttp::BROWSER_FIREFOX;
+				$this->name = self::BROWSER_FIREFOX;
 
 				return true;
 			}
@@ -378,7 +378,7 @@ class Browser {
 			$result  = explode(' ', stristr($this->agent, 'galeon'));
 			$version = explode('/', $result[0]);
 			$this->setVersion($version[1]);
-			$this->name = AbstractHttp::BROWSER_GALEON;
+			$this->name = self::BROWSER_GALEON;
 
 			return true;
 		}
@@ -395,7 +395,7 @@ class Browser {
 			$result  = explode('/', stristr($this->agent, 'googlebot'));
 			$version = explode(' ', $result[1]);
 			$this->setVersion(str_replace(';', '', $version[0]));
-			$this->name       = AbstractHttp::BROWSER_GOOGLEBOT;
+			$this->name       = self::BROWSER_GOOGLEBOT;
 			$this->isDesktop = false;
 			$this->isRobot    = true;
 
@@ -413,7 +413,7 @@ class Browser {
 		if (stripos($this->agent, 'icab') !== false) {
 			$aversion = explode(' ', stristr(str_replace('/', ' ', $this->agent), 'icab'));
 			$this->setVersion($aversion[1]);
-			$this->name = AbstractHttp::BROWSER_ICAB;
+			$this->name = self::BROWSER_ICAB;
 
 			return true;
 		}
@@ -428,7 +428,7 @@ class Browser {
 	protected function checkBrowserIceCat() {
 		if (stripos($this->agent, 'Mozilla') !== false && preg_match('/IceCat\/([^ ]*)/i', $this->agent, $matches)) {
 			$this->setVersion($matches[1]);
-			$this->name = AbstractHttp::BROWSER_ICECAT;
+			$this->name = self::BROWSER_ICECAT;
 
 			return true;
 		}
@@ -445,7 +445,7 @@ class Browser {
 			$result  = explode('/', stristr($this->agent, 'Iceweasel'));
 			$version = explode(' ', $result[1]);
 			$this->setVersion($version[0]);
-			$this->name = AbstractHttp::BROWSER_ICEWEASEL;
+			$this->name = self::BROWSER_ICEWEASEL;
 
 			return true;
 		}
@@ -460,7 +460,7 @@ class Browser {
 	protected function checkBrowserInternetExplorer() {
 		// Test for v1 - v1.5 IE
 		if (stripos($this->agent, 'microsoft internet explorer') !== false) {
-			$this->name = AbstractHttp::BROWSER_IE;
+			$this->name = self::BROWSER_IE;
 			$this->setVersion('1.0');
 			$result = stristr($this->agent, '/');
 			if (preg_match('/308|425|426|474|0b1/i', $result)) {
@@ -473,7 +473,7 @@ class Browser {
 			// See if the browser is the odd MSN Explorer
 			if (stripos($this->agent, 'msnb') !== false) {
 				$result     = explode(' ', stristr(str_replace(';', '; ', $this->agent), 'MSN'));
-				$this->name = AbstractHttp::BROWSER_MSN;
+				$this->name = self::BROWSER_MSN;
 				$this->setVersion(str_replace(array('(',
 													')',
 													';'
@@ -482,13 +482,13 @@ class Browser {
 				return true;
 			}
 			$result     = explode(' ', stristr(str_replace(';', '; ', $this->agent), 'msie'));
-			$this->name = AbstractHttp::BROWSER_IE;
+			$this->name = self::BROWSER_IE;
 			$this->setVersion(str_replace(array('(',
 												')',
 												';'
 										  ), '', $result[1]));
 			if (stripos($this->agent, 'IEMobile') !== false) {
-				$this->name       = AbstractHttp::BROWSER_POCKET_IE;
+				$this->name       = self::BROWSER_POCKET_IE;
 				$this->isDesktop = false;
 				$this->isMobile   = true;
 			}
@@ -496,7 +496,7 @@ class Browser {
 			return true;
 		} // Test for versions > IE 10
 		else if (stripos($this->agent, 'trident') !== false) {
-			$this->name = AbstractHttp::BROWSER_IE;
+			$this->name = self::BROWSER_IE;
 			$result     = explode('rv:', $this->agent);
 			$this->setVersion(preg_replace('/[^0-9.]+/', '', $result[1]));
 			$this->agent = str_replace(array("Mozilla",
@@ -505,7 +505,7 @@ class Browser {
 		} // Test for Pocket IE
 		else if (stripos($this->agent, 'mspie') !== false || stripos($this->agent, 'pocket') !== false) {
 			$result          = explode(' ', stristr($this->agent, 'mspie'));
-			$this->name      = AbstractHttp::BROWSER_POCKET_IE;
+			$this->name      = self::BROWSER_POCKET_IE;
 			$this->isDesktop = false;
 			$this->isMobile = true;
 
@@ -529,8 +529,8 @@ class Browser {
 	 */
 	protected function checkBrowseriPad() {
 		if (stripos($this->agent, 'iPad') !== false) {
-			$this->setVersion(AbstractHttp::VERSION_UNKNOWN);
-			$this->name = AbstractHttp::BROWSER_IPAD;
+			$this->setVersion(self::VERSION_UNKNOWN);
+			$this->name = self::BROWSER_IPAD;
 			$this->getSafariVersionOnIos();
 			$this->getChromeVersionOnIos();
 			$this->checkForFacebookIos();
@@ -549,8 +549,8 @@ class Browser {
 	 */
 	protected function checkBrowseriPhone() {
 		if (stripos($this->agent, 'iPhone') !== false) {
-			$this->setVersion(AbstractHttp::VERSION_UNKNOWN);
-			$this->name = AbstractHttp::BROWSER_IPHONE;
+			$this->setVersion(self::VERSION_UNKNOWN);
+			$this->name = self::BROWSER_IPHONE;
 			$this->getSafariVersionOnIos();
 			$this->getChromeVersionOnIos();
 			$this->checkForFacebookIos();
@@ -569,8 +569,8 @@ class Browser {
 	 */
 	protected function checkBrowseriPod() {
 		if (stripos($this->agent, 'iPod') !== false) {
-			$this->setVersion(AbstractHttp::VERSION_UNKNOWN);
-			$this->name = AbstractHttp::BROWSER_IPOD;
+			$this->setVersion(self::VERSION_UNKNOWN);
+			$this->name = self::BROWSER_IPOD;
 			$this->getSafariVersionOnIos();
 			$this->getChromeVersionOnIos();
 			$this->checkForFacebookIos();
@@ -592,7 +592,7 @@ class Browser {
 			$result  = explode(' ', stristr($this->agent, 'Konqueror'));
 			$version = explode('/', $result[0]);
 			$this->setVersion($version[1]);
-			$this->name = AbstractHttp::BROWSER_KONQUEROR;
+			$this->name = self::BROWSER_KONQUEROR;
 
 			return true;
 		}
@@ -609,7 +609,7 @@ class Browser {
 			$result  = explode('/', stristr($this->agent, 'Lynx'));
 			$version = explode(' ', (isset($result[1]) ? $result[1] : ""));
 			$this->setVersion($version[0]);
-			$this->name = AbstractHttp::BROWSER_LYNX;
+			$this->name = self::BROWSER_LYNX;
 
 			return true;
 		}
@@ -626,20 +626,20 @@ class Browser {
 			$aversion = explode(' ', stristr($this->agent, 'rv:'));
 			preg_match('/rv:[0-9].[0-9][a-b]?/i', $this->agent, $aversion);
 			$this->setVersion(str_replace('rv:', '', $aversion[0]));
-			$this->name = AbstractHttp::BROWSER_MOZILLA;
+			$this->name = self::BROWSER_MOZILLA;
 
 			return true;
 		}
 		else if (stripos($this->agent, 'mozilla') !== false && preg_match('/rv:[0-9]\.[0-9]/i', $this->agent) && stripos($this->agent, 'netscape') === false) {
 			$aversion = explode('', stristr($this->agent, 'rv:'));
 			$this->setVersion(str_replace('rv:', '', $aversion[0]));
-			$this->name = AbstractHttp::BROWSER_MOZILLA;
+			$this->name = self::BROWSER_MOZILLA;
 
 			return true;
 		}
 		else if (stripos($this->agent, 'mozilla') !== false && preg_match('/mozilla\/([^ ]*)/i', $this->agent, $matches) && stripos($this->agent, 'netscape') === false) {
 			$this->setVersion($matches[1]);
-			$this->name = AbstractHttp::BROWSER_MOZILLA;
+			$this->name = self::BROWSER_MOZILLA;
 
 			return true;
 		}
@@ -656,7 +656,7 @@ class Browser {
 			$result  = explode("/", stristr($this->agent, "msnbot"));
 			$version = explode(" ", $result[1]);
 			$this->setVersion(str_replace(";", "", $version[0]));
-			$this->name       = AbstractHttp::BROWSER_MSNBOT;
+			$this->name       = self::BROWSER_MSNBOT;
 			$this->isDesktop = false;
 			$this->isRobot    = true;
 
@@ -678,7 +678,7 @@ class Browser {
 												')',
 												';'
 										  ), '', $version[0]));
-			$this->name = AbstractHttp::BROWSER_NETPOSITIVE;
+			$this->name = self::BROWSER_NETPOSITIVE;
 
 			return true;
 		}
@@ -694,13 +694,13 @@ class Browser {
 	protected function checkBrowserNetscapeNavigator9Plus() {
 		if (stripos($this->agent, 'Firefox') !== false && preg_match('/Navigator\/([^ ]*)/i', $this->agent, $matches)) {
 			$this->setVersion($matches[1]);
-			$this->name = AbstractHttp::BROWSER_NETSCAPE_NAVIGATOR;
+			$this->name = self::BROWSER_NETSCAPE_NAVIGATOR;
 
 			return true;
 		}
 		else if (stripos($this->agent, 'Firefox') === false && preg_match('/Netscape6?\/([^ ]*)/i', $this->agent, $matches)) {
 			$this->setVersion($matches[1]);
-			$this->name = AbstractHttp::BROWSER_NETSCAPE_NAVIGATOR;
+			$this->name = self::BROWSER_NETSCAPE_NAVIGATOR;
 
 			return true;
 		}
@@ -716,10 +716,10 @@ class Browser {
 		if (preg_match("/Nokia([^\/]+)\/([^ SP]+)/i", $this->agent, $matches)) {
 			$this->setVersion($matches[2]);
 			if (stripos($this->agent, 'Series60') !== false || strpos($this->agent, 'S60') !== false) {
-				$this->name = AbstractHttp::BROWSER_NOKIA_S60;
+				$this->name = self::BROWSER_NOKIA_S60;
 			}
 			else {
-				$this->name = AbstractHttp::BROWSER_NOKIA;
+				$this->name = self::BROWSER_NOKIA;
 			}
 			$this->isMobile = true;
 
@@ -738,7 +738,7 @@ class Browser {
 			$result  = explode('/', stristr($this->agent, 'omniweb'));
 			$version = explode(' ', isset($result[1]) ? $result[1] : "");
 			$this->setVersion($version[0]);
-			$this->name = AbstractHttp::BROWSER_OMNIWEB;
+			$this->name = self::BROWSER_OMNIWEB;
 
 			return true;
 		}
@@ -762,7 +762,7 @@ class Browser {
 				$aversion = explode(' ', stristr($resultant, 'opera mini'));
 				$this->setVersion($aversion[1]);
 			}
-			$this->name       = AbstractHttp::BROWSER_OPERA_MINI;
+			$this->name       = self::BROWSER_OPERA_MINI;
 			$this->isDesktop = false;
 			$this->isMobile   = true;
 
@@ -786,7 +786,7 @@ class Browser {
 				$this->isDesktop = false;
 				$this->isMobile   = true;
 			}
-			$this->name = AbstractHttp::BROWSER_OPERA;
+			$this->name = self::BROWSER_OPERA;
 
 			return true;
 		}
@@ -801,7 +801,7 @@ class Browser {
 				$this->isDesktop = false;
 				$this->isMobile   = true;
 			}
-			$this->name = AbstractHttp::BROWSER_OPERA;
+			$this->name = self::BROWSER_OPERA;
 
 			return true;
 		}
@@ -817,7 +817,7 @@ class Browser {
 		if (stripos($this->agent, 'Phoenix') !== false) {
 			$aversion = explode('/', stristr($this->agent, 'Phoenix'));
 			$this->setVersion($aversion[1]);
-			$this->name = AbstractHttp::BROWSER_PHOENIX;
+			$this->name = self::BROWSER_PHOENIX;
 
 			return true;
 		}
@@ -838,9 +838,9 @@ class Browser {
 				$this->setVersion($aversion[0]);
 			}
 			else {
-				$this->setVersion(AbstractHttp::VERSION_UNKNOWN);
+				$this->setVersion(self::VERSION_UNKNOWN);
 			}
-			$this->name = AbstractHttp::BROWSER_SAFARI;
+			$this->name = self::BROWSER_SAFARI;
 
 			return true;
 		}
@@ -855,7 +855,7 @@ class Browser {
 	protected function checkBrowserShiretoko() {
 		if (stripos($this->agent, 'Mozilla') !== false && preg_match('/Shiretoko\/([^ ]*)/i', $this->agent, $matches)) {
 			$this->setVersion($matches[1]);
-			$this->name = AbstractHttp::BROWSER_SHIRETOKO;
+			$this->name = self::BROWSER_SHIRETOKO;
 
 			return true;
 		}
@@ -872,7 +872,7 @@ class Browser {
 			$result  = explode('/', stristr($this->agent, 'Slurp'));
 			$version = explode(' ', $result[1]);
 			$this->setVersion($version[0]);
-			$this->name       = AbstractHttp::BROWSER_SLURP;
+			$this->name       = self::BROWSER_SLURP;
 			$this->isDesktop = false;
 			$this->isMobile   = false;
 			$this->isRobot    = true;
@@ -893,7 +893,7 @@ class Browser {
 			$result  = explode('/', stristr($this->agent, 'W3C-checklink'));
 			$version = explode(' ', $result[1]);
 			$this->setVersion($version[0]);
-			$this->name = AbstractHttp::BROWSER_W3CVALIDATOR;
+			$this->name = self::BROWSER_W3CVALIDATOR;
 
 			return true;
 		}
@@ -903,12 +903,12 @@ class Browser {
 			$result  = explode('/', stristr($ua, 'W3C_Validator'));
 			$version = explode(' ', $result[1]);
 			$this->setVersion($version[0]);
-			$this->name = AbstractHttp::BROWSER_W3CVALIDATOR;
+			$this->name = self::BROWSER_W3CVALIDATOR;
 
 			return true;
 		}
 		else if (stripos($this->agent, 'W3C-mobileOK') !== false) {
-			$this->name     = AbstractHttp::BROWSER_W3CVALIDATOR;
+			$this->name     = self::BROWSER_W3CVALIDATOR;
 			$this->isMobile = true;
 
 			return true;
@@ -926,7 +926,7 @@ class Browser {
 			$result  = explode('/', stristr($this->agent, 'webtv'));
 			$version = explode(' ', $result[1]);
 			$this->setVersion($version[0]);
-			$this->name       = AbstractHttp::BROWSER_WEBTV;
+			$this->name       = self::BROWSER_WEBTV;
 			$this->isDesktop = false;
 			$this->isTv       = true;
 
@@ -975,7 +975,7 @@ class Browser {
 		if (isset($result[1])) {
 			$version = explode(' ', $result[1]);
 			$this->setVersion($version[0]);
-			$this->name = AbstractHttp::BROWSER_CHROME;
+			$this->name = self::BROWSER_CHROME;
 
 			return true;
 		}
