@@ -3,13 +3,13 @@ namespace Scion\Http;
 
 use Scion\Validator\Ip;
 
-class Client {
+class RemoteAddress {
 
 	/**
-	 * Return IP address
+	 * Return client IP address
 	 * @return string
 	 */
-	public function getIp() {
+	public function getIpAddress() {
 		$ip = new Ip();
 
 		if (isset($_SERVER['HTTP_CLIENT_IP']) && $ip->isValid($_SERVER['HTTP_CLIENT_IP'])) {
