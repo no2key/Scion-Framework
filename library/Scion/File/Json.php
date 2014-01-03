@@ -32,15 +32,21 @@ class Json {
 	/**
 	 * Process PSR-0 autoload json file, return an array of values
 	 * @param string $jsonUrl
+	 * @param bool $default
 	 * @return array
 	 */
-	public static function processConfigAutoload($jsonUrl) {
+	public static function processConfigAutoload($jsonUrl, $default = false) {
 		$data   = [];
 		$content = file_get_contents($jsonUrl);
 
 		if ($content != '') {
 			foreach (self::decode($content, true)['autoload']['psr-0'] as $namespace => $includePath) {
-				$data[$namespace] = $includePath;
+				if ($default === true) {
+					$data[$namespace] = dirname(dirname(SCION_DIR)) . DIRECTORY_SEPARATOR . $includePath;
+				}
+				else {
+					$data[$namespace] = $includePath;
+				}
 			}
 		}
 
