@@ -15,7 +15,7 @@ class Autoloader {
 	 * @param $defaultNamespaces
 	 */
 	public function __construct($defaultNamespaces) {
-		$this->_namespaces = Json::processConfigAutoload($defaultNamespaces);
+		$this->_namespaces = Json::processConfigAutoload($defaultNamespaces, true);
 	}
 
 	/**
@@ -59,8 +59,7 @@ class Autoloader {
 				$trimmedClass = substr($className, strlen($namespace));
 				$filename     = self::_transformClassNameToFilename($trimmedClass, $includePath);
 				if (file_exists($filename) && !class_exists($className)) {
-					//require $filename; todo this is the right way to call a file
-					require_once $filename; //todo, replace for test to dwoo
+					require $filename;
 				}
 			}
 		}
