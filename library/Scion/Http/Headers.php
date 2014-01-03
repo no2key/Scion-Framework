@@ -284,7 +284,7 @@ class Headers {
 	/**
 	 * Get a sub-service of Headers
 	 * @param $service
-	 * @return UserAgent
+	 * @return mixed
 	 */
 	public function get($service) {
 		switch ($service) {

@@ -358,6 +358,33 @@ class Request {
 	}
 
 	/**
+	 * Get a sub-service of Request
+	 * @param $service
+	 * @return mixed
+	 */
+	public function get($service) {
+		switch ($service) {
+
+			/**
+			 * Get a RemoteAddress object
+			 */
+			case 'remoteAddress':
+				return new RemoteAddress();
+				break;
+
+			/**
+			 * Get a Server object
+			 */
+			case 'server':
+				return new Server();
+				break;
+
+			default:
+				break;
+		}
+	}
+
+	/**
 	 * Check URL Rewriting is enable in your web server
 	 */
 	private function _checkUrlRewriting() {
