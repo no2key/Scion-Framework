@@ -56,14 +56,6 @@ trait Controller {
 				break;
 
 			/**
-			 * Get Redirect object
-			 * @return \Scion\Mvc\Controller\Plugin\Redirect
-			 */
-			case 'redirect':
-				return new Redirect();
-				break;
-
-			/**
 			 * Get Request object
 			 * @return \Scion\Http\Request
 			 */
