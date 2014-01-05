@@ -190,7 +190,7 @@ class Headers {
 	 * @param $statuscode
 	 * @return $this*
 	 */
-	public function status($statuscode) {
+	public function setStatus($statuscode) {
 		$this->add('HTTP/1.1 ' . $statuscode . ' ' . $this->statuscodes[$statuscode]);
 
 		return $this;
@@ -213,7 +213,7 @@ class Headers {
 	 * @param $etag
 	 * @return $this
 	 */
-	public function etag($etag) {
+	public function setEtag($etag) {
 		$this->add('Etag', $etag);
 
 		return $this;
@@ -308,6 +308,13 @@ class Headers {
 			 */
 			case 'platform':
 				return Platform::getInstance($this);
+				break;
+
+			/**
+			 * Get a Redirect object
+			 */
+			case 'redirect':
+				return new Redirect($this);
 				break;
 
 			default:
