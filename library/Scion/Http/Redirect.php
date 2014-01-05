@@ -14,7 +14,7 @@ class Redirect {
 	}
 
 	/**
-	 * Redirect to a specific location
+	 * Creates a redirect response so that it conforms to the rules defined for a redirect status code.
 	 * @param string $routeUrl
 	 * @param int $status
 	 */
