@@ -19,9 +19,9 @@ class Redirect {
 	 * @param int $status
 	 */
 	public function to($routeUrl, $status = 302) {
-		$this->_header->setStatus($status);
-		$this->_header->setLocation($routeUrl);
-		$this->_header->sendHeader();
+		$this->_headers->setStatus($status);
+		$this->_headers->setLocation($routeUrl);
+		$this->_headers->sendHeader();
 	}
 
 } 
