@@ -1,7 +1,7 @@
 <?php
 namespace Scion\Authentication\Adapter\DbTable;
 
-use Scion\Http\Client;
+use Scion\Http\RemoteAddress;
 
 class Log {
 
@@ -32,7 +32,7 @@ class Log {
 			return false;
 		}
 		else {
-			return $this->_dbh->insertInto('log', ['uid' => $uid, 'action' => $action, 'info' => $info, 'ip' => (new Client())->getIp()])->execute();
+			return $this->_dbh->insertInto('log', ['uid' => $uid, 'action' => $action, 'info' => $info, 'ip' => (new RemoteAddress())->getIpAddress()])->execute();
 		}
 	}
 }

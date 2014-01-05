@@ -11,6 +11,11 @@ class AuthenticationService {
 
 	}
 
+	/**
+	 * Get database table authentication object
+	 * @param $dbh
+	 * @return \Scion\Authentication\Adapter\DbTable
+	 */
 	public function getDbTable($dbh) {
 		return DbTable::getinstance($dbh);
 	}

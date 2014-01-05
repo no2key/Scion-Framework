@@ -3,7 +3,7 @@ namespace Scion\Authentication\Adapter\DbTable;
 
 use Scion\Authentication\Adapter\DbTable;
 use Scion\Db\Pdo;
-use Scion\Http\Client;
+use Scion\Http\RemoteAddress;
 
 class Session {
 
@@ -20,7 +20,7 @@ class Session {
 	 * @return array $data
 	 */
 	public function add($uid, $expire) {
-		$data         = $this->_dbh->from('users')->select(null)->select('salt, lang')->where('user_id = ?', $uid)->execute()->fetch(Pdo::FETCH_ASSOC);
+		$data         = $this->_dbh->from('users')->select(null)->select('salt')->where('user_id = ?', $uid)->execute()->fetch(Pdo::FETCH_ASSOC);
 		$data['hash'] = sha1($data['salt'] . microtime());
 
 		$agent = $_SERVER['HTTP_USER_AGENT'];
@@ -30,10 +30,12 @@ class Session {
 		$data['expire']     = date("Y-m-d H:i:s", strtotime($expire));
 		$data['cookie_crc'] = sha1($data['hash'] . DbTable::SITE_KEY);
 
-		$this->_dbh->insertInto('sessions', ['uid'       => $uid, 'hash' => $data['hash'],
-											'expiredate' => $data['expire'], 'ip' => (new Client)->getIp(),
-											'agent'      => $agent, 'cookie_crc' => $data['cookie_crc'],
-											'lang'       => $data['lang']
+		$this->_dbh->insertInto('sessions', ['uid'       => $uid,
+											'hash'       => $data['hash'],
+											'expiredate' => $data['expire'],
+											'ip'         => (new RemoteAddress())->getIpAddress(),
+											'agent'      => $agent,
+											'cookie_crc' => $data['cookie_crc']
 											])->execute();
 
 		return $data;
@@ -58,6 +60,7 @@ class Session {
 		if ($query) {
 			return $this->_dbh->from('sessions')->select(null)->select('uid')->where('hash', $hash)->execute()->fetch(Pdo::FETCH_ASSOC);
 		}
+
 		return false;
 	}
 
@@ -67,7 +70,7 @@ class Session {
 	 * @return bool
 	 */
 	public function updateIp($sid) {
-		return $this->_dbh->update('sessions')->set('ip', (new Client())->getIp())->where('id', $sid)->execute();
+		return $this->_dbh->update('sessions')->set('ip', (new RemoteAddress())->getIpAddress())->where('id', $sid)->execute();
 	}
 
 	/**

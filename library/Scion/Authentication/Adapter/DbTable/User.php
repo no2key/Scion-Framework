@@ -7,12 +7,12 @@ use Scion\Stdlib\DateTime;
 
 class User {
 
-	private $_dbh;
-	private $_activation;
+	protected $dbh;
+	protected $activation;
 
-	public function __construct($dbh, Activation $activation) {
-		$this->_dbh = $dbh;
-		$this->_activation = $activation;
+	public function __construct($dbh) {
+		$this->dbh        = $dbh;
+		$this->activation = new Activation($dbh);
 	}
 
 	/**
@@ -21,11 +21,11 @@ class User {
 	 * @return array|bool
 	 */
 	public function getUserData($username) {
-		$data = $this->_dbh->from('users')->select(null)->select('user_id, password, email, salt, lang, isactive, joined')->where('username = ?', $username)->execute()->fetch(Pdo::FETCH_ASSOC);
+		$data = $this->dbh->from('users')->select(null)->select('user_id, password, email, salt, isactive, joined')->where('username = ?', $username)->execute()->fetch(Pdo::FETCH_ASSOC);
 
 		if ($data) {
 			$data['username'] = $username;
-			$data['uid']      = $data['id'];
+			$data['uid']      = $data['user_id'];
 
 			return $data;
 		}
@@ -39,14 +39,15 @@ class User {
 	 * @return string $username
 	 */
 	public function getUsername($hash) {
-		$row = $this->_dbh->from('sessions')->select(null)->select('uid')->where('hash = ?', $hash)->execute()->fetch(Pdo::FETCH_ASSOC);
+		$row = $this->dbh->from('sessions')->select(null)->select('uid')->where('hash = ?', $hash)->execute()->fetch(Pdo::FETCH_ASSOC);
 
 		if ($row) {
-			$row = $this->_dbh->from('users')->select(null)->select('username')->where('user_id = ?', $row['uid'])->execute()->fetch(Pdo::FETCH_ASSOC);
+			$row = $this->dbh->from('users')->select(null)->select('username')->where('user_id = ?', $row['uid'])->execute()->fetch(Pdo::FETCH_ASSOC);
 			if ($row) {
 				return $row['username'];
 			}
 		}
+
 		return false;
 	}
 
@@ -56,7 +57,7 @@ class User {
 	 * @return bool
 	 */
 	public function isEmailTaken($email) {
-		$query = $this->_dbh->from('users')->where('email = ?', $email)->execute();
+		$query = $this->dbh->from('users')->where('email = ?', $email)->execute();
 
 		if ($query->rowCount() == 0) {
 			return false;
@@ -66,12 +67,12 @@ class User {
 	}
 
 	/**
-	* Checks if a username is already in use
-	* @param string $username
-	* @return bool
-	*/
+	 * Checks if a username is already in use
+	 * @param string $username
+	 * @return bool
+	 */
 	public function isUsernameTaken($username) {
-		$query = $this->_dbh->from('users')->where('username = ?', $username)->execute();
+		$query = $this->dbh->from('users')->where('username = ?', $username)->execute();
 
 		if ($query->rowCount() == 0) {
 			return false;
@@ -81,35 +82,38 @@ class User {
 	}
 
 	/**
-	* Adds a new user to database
-	* @param string $email
-	* @param string $username
-	* @param string $password
-	* @return int $uid
-	*/
+	 * Adds a new user to database
+	 * @param string $email
+	 * @param string $username
+	 * @param string $password
+	 * @return int $uid
+	 */
 	public function addUser($email, $username, $password) {
 		$username = htmlentities($username);
 		$email    = htmlentities($email);
 
 		$salt = Rand::getBytes(20);
 
-		$lang = 'en';
-
-		$this->_dbh->insertInto('users', ['username' => $username, 'password' => $password, 'email' => $email, 'salt' => $salt, 'lang' => $lang, 'joined' => (new DateTime())->now(DateTime::MYSQL_DATETIME)])->execute();
+		$this->dbh->insertInto('users', ['username' => $username,
+										'password'  => $password,
+										'email'     => $email,
+										'salt'      => $salt,
+										'joined'    => (new DateTime())->now(DateTime::MYSQL_DATETIME)
+										])->execute();
 		$user = $this->getUserData($username);
 
-		$this->_activation->add($user['user_id'], $email);
+		$this->activation->add($user['user_id'], $email);
 
 		return $user['user_id'];
 	}
 
 	/**
-	* Changes a user's password
-	* @param int $uid
-	* @param string $currpass
-	* @param string $newpass
-	* @return array $return
-	*/
+	 * Changes a user's password
+	 * @param int    $uid
+	 * @param string $currpass
+	 * @param string $newpass
+	 * @return array $return
+	 */
 	/*public function changePassword($uid, $currpass, $newpass) {
 		$return = array();
 
@@ -185,10 +189,10 @@ class User {
 	}*/
 
 	/**
-	* Gets a user's email address by UID
-	* @param int $uid
-	* @return string $email
-	*/
+	 * Gets a user's email address by UID
+	 * @param int $uid
+	 * @return string $email
+	 */
 	/*public function getEmail($uid) {
 		$query = $this->dbh->prepare("SELECT email FROM " . $this->config->table_users . " WHERE id = ?");
 		$query->execute(array($uid));
@@ -202,12 +206,12 @@ class User {
 	}*/
 
 	/**
-	* Changes a user's email
-	* @param int $uid
-	* @param string $currpass
-	* @param string $newpass
-	* @return array $return
-	*/
+	 * Changes a user's email
+	 * @param int    $uid
+	 * @param string $currpass
+	 * @param string $newpass
+	 * @return array $return
+	 */
 	/*public function changeEmail($uid, $email, $password) {
 		$return = array();
 

@@ -1,9 +1,7 @@
 <?php
 namespace Scion\Authentication\Adapter;
 
-use Scion\Authentication\Adapter\DbTable\Activation;
 use Scion\Authentication\Adapter\DbTable\Attempt;
-use Scion\Authentication\Adapter\DbTable\Log;
 use Scion\Authentication\Adapter\DbTable\Registration;
 use Scion\Authentication\Adapter\DbTable\Reset;
 use Scion\Authentication\Adapter\DbTable\Session;
@@ -12,7 +10,9 @@ use Scion\Crypt\Hash;
 use Scion\Crypt\Key\Derivation\Pbkdf2;
 use Scion\Db\Pdo;
 use Scion\Db\Provider\AbstractProvider;
-use Scion\Http\Client;
+use Scion\Http\RemoteAddress;
+use Scion\Log\Handler\DbTableHandler;
+use Scion\Log\Logger;
 use Scion\Mvc\GetterSetter;
 use Scion\Mvc\Singleton;
 
@@ -29,7 +29,6 @@ class DbTable implements AdapterInterface {
 	private $_log;
 	private $_session;
 	private $_user;
-	private $_activation;
 	private $_registration;
 	private $_reset;
 
@@ -37,12 +36,14 @@ class DbTable implements AdapterInterface {
 		if (!$dbh instanceof AbstractProvider) {
 			throw new \Exception('$provider must be a instance of a valid provider (mysql, sqlite, ...)');
 		}
-		$this->_dbh        = $dbh;
+		$this->_dbh = $dbh;
+
+		$this->_log = new Logger('authentication');
+		$this->_log->pushHandler(new DbTableHandler($dbh));
+
 		$this->_attempt    = new Attempt($dbh);
-		$this->_log        = new Log($dbh);
 		$this->_session    = new Session($dbh);
-		$this->_activation = new Activation($dbh);
-		$this->_user       = new User($dbh, $this->_activation);
+		$this->_user       = new User($dbh);
 		$this->_reset      = new Reset($dbh, $this->_attempt);
 	}
 
@@ -273,11 +274,11 @@ class DbTable implements AdapterInterface {
 			$db_agent   = $row['agent'];
 			$db_cookie  = $row['cookie_crc'];
 
-			if ((new Client)->getIp() != $db_ip) {
+			if ((new RemoteAddress())->getIpAddress() != $db_ip) {
 				if ($_SERVER['HTTP_USER_AGENT'] != $db_agent) {
 					$this->_session->deleteFromUid($uid);
 					setcookie('auth_session', $hash, time() - 3600, '/', '', false, true);
-					$this->_log->addNew($uid, "CHECKSESSION_FAIL_DIFF", "IP and User Agent Different ( DB : {$db_ip} / Current : " . (new Client())->getIp() . " ) -> UID sessions deleted, cookie deleted");
+					$this->_log->addNew($uid, "CHECKSESSION_FAIL_DIFF", "IP and User Agent Different ( DB : {$db_ip} / Current : " . (new RemoteAddress())->getIpAddress() . " ) -> UID sessions deleted, cookie deleted");
 				}
 				else {
 					$expiredate  = strtotime($expiredate);
