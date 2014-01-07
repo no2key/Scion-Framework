@@ -3,6 +3,12 @@ namespace Scion\Validator;
 
 class EmailAddress {
 
+	/**
+	 * Returns true if and only if $address is a valid email address
+	 * @param string $address
+	 * @param string $patternSelect
+	 * @return bool
+	 */
 	public static function isValid($address, $patternSelect = 'auto') {
 		if ($patternSelect == 'auto') {
 			if (defined(
