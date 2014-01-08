@@ -12,6 +12,7 @@ class Cookie {
 	 */
 	const SESSION = 0;
 	const EXPIRE  = - 3600;
+	const HOUR    = 3600;
 	const DAY     = 86400;
 	const WEEK    = 604800;
 	const MONTH   = 2592000;
@@ -60,7 +61,11 @@ class Cookie {
 		// convert expiration time to a Unix timestamp
 		if ($expire instanceof \DateTime) {
 			$expire = $expire->format('U');
-		} elseif (!is_numeric($expire)) {
+		}
+		elseif (is_numeric($expire)) {
+			$expire = time() + $expire;
+		}
+		else {
 			$expire = strtotime($expire);
 
 			if (false === $expire || -1 === $expire) {
