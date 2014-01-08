@@ -1,6 +1,10 @@
 <?php
 namespace Scion\Http;
 
+use Scion\Http\Header\Browser;
+use Scion\Http\Header\Cookie;
+use Scion\Http\Header\Platform;
+use Scion\Http\Header\Redirect;
 use Scion\Http\Header\UserAgent;
 use Scion\Mvc\Singleton;
 
@@ -279,6 +283,29 @@ class Headers {
 	 */
 	public function getHttpHeaders() {
 		return $this->httpHeaders;
+	}
+
+	/**
+	 * Set a cookie
+	 * @param Cookie $cookie
+	 * @return int
+	 */
+	public function setCookie(Cookie $cookie) {
+		if (setcookie($cookie->name, $cookie->value, $cookie->expire, $cookie->path, $cookie->domain, $cookie->secure, $cookie->httpOnly)) {
+			return Cookie::ERROR_NONE;
+		}
+		return Cookie::ERROR_SET_COOKIE;
+	}
+
+	/**
+	 * Removes a cookie
+	 * @param string $name
+	 */
+	public function removeCookie($name) {
+		if (isset($_COOKIE[$name])) {
+			unset($_COOKIE[$name]);
+			setcookie($name, null, -1, '/');
+		}
 	}
 
 	/**

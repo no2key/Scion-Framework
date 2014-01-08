@@ -1,5 +1,5 @@
 <?php
-namespace Scion\Http;
+namespace Scion\Http\Header;
 
 use Scion\Mvc\GetterSetter;
 use Scion\Mvc\Singleton;

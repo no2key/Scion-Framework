@@ -1,5 +1,7 @@
 <?php
-namespace Scion\Http;
+namespace Scion\Http\Header;
+
+use Scion\Http\Headers;
 
 class Redirect {
 
